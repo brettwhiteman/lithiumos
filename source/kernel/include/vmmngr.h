@@ -1,9 +1,9 @@
 #ifndef VMMNGR_H
 #define VMMNGR_H
 
-#include "stdinc.h"
-#include "pde.h"
-#include "pte.h"
+#include <stdinc.h>
+#include <pde.h>
+#include <pte.h>
 
 #define PAGES_PER_TABLE 	1024
 #define PAGES_PER_DIR		1024

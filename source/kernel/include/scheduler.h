@@ -1,9 +1,9 @@
 #ifndef SCHEDULER_H
 #define SCHEDULER_H
 
-#include "stdinc.h"
-#include "vmmngr.h"
-#include "interrupt.h"
+#include <stdinc.h>
+#include <vmmngr.h>
+#include <interrupt.h>
 
 typedef struct registers_struct
 {

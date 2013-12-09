@@ -1,8 +1,8 @@
 #ifndef PTE_H
 #define PTE_H
 
-#include "stdinc.h"
-#include "pmmngr.h"
+#include <stdinc.h>
+#include <pmmngr.h>
 
 typedef uint32_t pt_entry;
 

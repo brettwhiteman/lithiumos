@@ -1,8 +1,8 @@
 #ifndef PDE_H
 #define PDE_H
 
-#include "stdinc.h"
-#include "pmmngr.h"
+#include <stdinc.h>
+#include <pmmngr.h>
  
 typedef uint32_t pd_entry;
 

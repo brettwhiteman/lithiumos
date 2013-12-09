@@ -12,7 +12,7 @@ Lithium OS kernel initialisation
 #include <vmmngr.h>
 #include <stdinc.h>
 #include <gdt.h>
-#include <apicalls.h>
+#include <syscall.h>
 #include <scheduler.h>
 #include <kmalloc.h>
 
@@ -39,17 +39,19 @@ struct memoryMapEntry
 
 void initialise_memory(void* ptrMemoryMap, uint32_t uiMemoryMapEntryCount);
 
-void kmain(void* ptrMemoryMap, uint32_t memoryMapEntryCount)
+void kmain(void *ptrMemoryMap, uint32_t memoryMapEntryCount)
 {
 	// Self-explanatory functions
-	set_colour(0x1F);
+	set_colour(0x0F);
 	clear_screen();
 	print_string("Lithium OS - Loading...\n");
 	setup_interrupts();
 	print_string("IDT installed\n");
 	timer_install();
 	keyboard_install();
+
 	initialise_memory(ptrMemoryMap, memoryMapEntryCount);
+
 	scheduler_setup_tss();
 
 	// Install the system call interrupt handler
@@ -103,11 +105,11 @@ void kmain(void* ptrMemoryMap, uint32_t memoryMapEntryCount)
 		0x05, 0x44, 0x83, 0x03, 0x66, 0xc3, 0x41, 0xc5, 0x0c, 0x04, 0x04, 0x00
 	};
 
-	uint32_t id = scheduler_add_process((void *)TEST_BIN, sizeof(TEST_BIN));
+	//uint32_t id = scheduler_add_process((void *)TEST_BIN, sizeof(TEST_BIN));
 
-	scheduler_add_thread(id, (void *)0x1000);
+	//scheduler_add_thread(id, (void *)0x1000);
 
-	//scheduler_add_process((void *)TEST2_BIN, sizeof(TEST2_BIN));
+	scheduler_add_process((void *)TEST2_BIN, sizeof(TEST2_BIN));
 
 	// Interrupts are still disabled from the stage 2 bootloader
 	enable_interrupts();
@@ -159,7 +161,7 @@ void initialise_memory(void* ptrMemoryMap, uint32_t memoryMapEntryCount)
 	print_string("Initialised ");
 	print_string(printBuf);
 	print_string(" KiB of usable memory\n");
-	
+
 	// Calculate the location and size of the extended BIOS data area
 	uint32_t ebdaBase = (uint32_t)(*(uint16_t*)0x040E) << 4;
 
@@ -185,13 +187,13 @@ void initialise_memory(void* ptrMemoryMap, uint32_t memoryMapEntryCount)
 	// Initialise virtual memory manager. If it fails print a message and halt system.
 	if(!vmmngr_init((physical_addr)PAGEDIR_PHYSICAL_ADDRESS))
 	{
-		print_string("vmmngr_init() failed, halting");
+		print_string("vmmngr_init() failed! System halted.");
 		disable_interrupts();
 		halt_cpu();
 	}
 
 	print_string("Virtual memory manager initialised\n");
-	
+
 	// Map video memory
 	vmmngr_map_page(VIDMEM_PHYSICAL_ADDRESS, VIDMEM_VIRTUAL_ADDRESS);
 	vmmngr_map_page(VIDMEM_PHYSICAL_ADDRESS + 4096, VIDMEM_VIRTUAL_ADDRESS + 4096);
@@ -241,7 +243,7 @@ void initialise_memory(void* ptrMemoryMap, uint32_t memoryMapEntryCount)
 	// Initialise kernel memory allocator
 	if(!kmalloc_init())
 	{
-		print_string("\nkmalloc_init() failed. System halted.\n");
+		print_string("\nkmalloc_init() failed! System halted.\n");
 		disable_interrupts();
 		halt_cpu();
 	}

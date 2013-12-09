@@ -10,7 +10,7 @@ static void* ptrVidMem = (void*)0x000B8000;
 
 void print_char(char c)
 {
-	uint8_t *p = (byte*)ptrVidMem;
+	char *p = (char *)ptrVidMem;
 
 	switch(c)
 	{
@@ -68,7 +68,7 @@ void print_char(char c)
 	}
 }
 
-void print_string(char *s)
+void print_string(const char *s)
 {
 	uint32_t count = 0;
 
@@ -85,7 +85,7 @@ void print_string(char *s)
 	update_cursor_pos();
 }
 
-void print_string_at(char *s, uint32_t x, uint32_t y)
+void print_string_at(const char *s, uint32_t x, uint32_t y)
 {
 	curX = x;
 	curY = y;

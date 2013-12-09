@@ -15,10 +15,6 @@ zloop:
 	cmp ebx, ebss
 	jb zloop
 
-	mov ax, 0x10
-	mov ss, ax
-	mov esp, 0xF0001000
-
 	jmp kmain
 
 	cli

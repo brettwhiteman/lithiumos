@@ -1,7 +1,7 @@
 #ifndef ATA_H
 #define ATA_H
 
-#include "../stdinc.h"
+#include <stdinc.h>
 
 bool ata_wait_until_not_busy(uint32_t timeout_ms);
 void ata_send_command(byte command);

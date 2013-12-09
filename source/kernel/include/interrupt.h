@@ -1,7 +1,7 @@
 #ifndef INTERRUPT_H
 #define INTERRUPT_H
 
-#include "stdinc.h"
+#include <stdinc.h>
 
 typedef struct isr_struct
 {

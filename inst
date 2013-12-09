@@ -1,0 +1,11 @@
+#! /bin/sh
+dd if=./source/bootloader/bootloader.bin of=os.img bs=512 count=1 conv=notrunc
+dd if=./fat.bin of=os.img bs=512 count=32767 seek=1
+mkdir temp
+sleep 0.5s
+mount /dev/loop0 ./temp
+cp ./source/bootloader/STAGE2.BIN ./temp
+cp ./source/kernel/KERNEL.BIN ./temp
+sleep 0.5s
+umount ./temp
+rmdir temp

@@ -4,9 +4,9 @@ Lithium OS panic screen
 
 #include <panic.h>
 #include <print.h>
-#include <main.h>
+#include <util.h>
 
-char* exception_messages[] = 
+const char *exception_messages[] = 
 {
 	"Division by zero",
 	"Debug",

@@ -1,0 +1,2 @@
+#! /bin/sh
+qemu-system-i386 -L /usr/share/qemu -m 128M -hda ./os.img -d cpu_reset

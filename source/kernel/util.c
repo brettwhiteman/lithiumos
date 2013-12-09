@@ -4,26 +4,26 @@ Lithium OS utilities.
 
 #include <util.h>
 
-static char* numberChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const static char *numberChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-void* memset(byte* ptr, byte value, uint32_t count)
+void *memset(byte *ptr, byte value, uint32_t count)
 {
 	for(uint32_t i = 0; i < count; i++)
 	{
 		ptr[i] = value;
 	}
 
-	return (void*)ptr;
+	return (void *)ptr;
 }
 
-void* memsetd(uint32_t* ptr, uint32_t value, uint32_t count)
+void* memsetd(uint32_t *ptr, uint32_t value, uint32_t count)
 {
 	for(uint32_t i = 0; i < count; i++)
 	{
 		ptr[i] = value;
 	}
 
-	return (void*)ptr;
+	return (void *)ptr;
 }
 
 inline byte inportb(uint16_t port)
@@ -100,7 +100,7 @@ inline void halt_cpu(void)
 	__asm__ __volatile__("hlt");
 }
 
-uint32_t strcmp(char* string1, char* string2)
+uint32_t strcmp(char *string1, char *string2)
 {
 	uint32_t i = 0;
 

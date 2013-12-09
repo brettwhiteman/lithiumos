@@ -1,7 +1,7 @@
 #ifndef PMMNGR_H
 #define PMMNGR_H
 
-#include "stdinc.h"
+#include <stdinc.h>
 
 typedef uint32_t physical_addr;
 

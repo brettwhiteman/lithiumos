@@ -1,8 +1,8 @@
 #ifndef TIMER_H
 #define TIMER_H
 
-#include "stdinc.h"
-#include "interrupt.h"
+#include <stdinc.h>
+#include <interrupt.h>
 
 void set_timer_frequency(uint32_t hz);
 void timer_handler(isr_t *stk);
