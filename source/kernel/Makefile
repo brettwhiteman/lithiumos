@@ -27,5 +27,5 @@ KERNEL.BIN: $(OBJFILES) $(ASMOBJ) loader.asmo linker.ld
 	@$(CC) $(CFLAGS) -MD -MP -c $< -o $@
 
 clean:
-	-@rm -f $(wildcard $(OBJFILES) $(ASMOBJ) $(DEPFILES))
+	-@rm -f $(wildcard $(OBJFILES) $(ASMOBJ) $(DEPFILES) loader.asmo)
 	@echo Cleaned
