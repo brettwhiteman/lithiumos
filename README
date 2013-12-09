@@ -1,1 +1,7 @@
 Lithium OS
+
+A kernel designed for the x86 architecture.
+
+Features:
+Paging
+Multi-tasking

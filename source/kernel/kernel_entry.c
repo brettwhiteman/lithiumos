@@ -109,7 +109,9 @@ void kmain(void *ptrMemoryMap, uint32_t memoryMapEntryCount)
 
 	//scheduler_add_thread(id, (void *)0x1000);
 
-	scheduler_add_process((void *)TEST2_BIN, sizeof(TEST2_BIN));
+	uint32_t id = scheduler_add_process((void *)TEST2_BIN, sizeof(TEST2_BIN));
+
+	scheduler_add_thread(id, (void *)0x1000);
 
 	// Interrupts are still disabled from the stage 2 bootloader
 	enable_interrupts();

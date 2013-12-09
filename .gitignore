@@ -1,3 +1,5 @@
 *.o
 *.asmo
 *.d
+*.bin
+*.BIN
