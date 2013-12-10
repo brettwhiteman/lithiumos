@@ -12,7 +12,7 @@ Not accurate - has changed
 0x00009000 - 0x0000A000		Kernel stack (4KB)
 0x0000AE00 - 0x0007FFFF		Free space (468.5KB)
 0x00080000 - 0x00084000		Page Directory + 3 Page Tables (16KB)
-X - 0x0009FFFF		EBDA (Unknown size)
+X          - 0x0009FFFF		EBDA (Unknown size)
 0x000A0000 - 0x000FFFFF		Video memory / ROM area (384KB)
 
 0x00100000 - 0x0011FFFF		Memory bitmap (128KiB)
