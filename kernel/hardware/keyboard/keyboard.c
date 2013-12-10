@@ -11,7 +11,10 @@ static bool _key_shift = 0;
 //static bool _key_alt = 0;
 static bool _capslock = 0;
 
-static byte kbdus[128] =
+static volatile bool keyPressed = 0;
+static volatile char last = 0;
+
+static const char kbdus[128] =
 {
 	0,  27, '1', '2', '3', '4', '5', '6', '7', '8',	/* 9 */
 	'9', '0', '-', '=', '\b',	/* Backspace */
@@ -57,6 +60,7 @@ void keyboard_handler(isr_t *stk)
 
 	/* Read from the keyboard's data buffer */
 	scancode = inportb(0x60);
+
 	/* If the top bit of the byte we read from the keyboard is
 	*  set, that means that a key has just been released */
 	if (scancode & 0x80)
@@ -64,6 +68,7 @@ void keyboard_handler(isr_t *stk)
 		/* You can use this one to see if the user released the
 		*  shift, alt, or control keys... */
 		scancode = scancode & 0x7F; //unset highest bit
+
 		switch(kbdus[scancode])
 		{
 			case 2: //left shift
@@ -88,7 +93,7 @@ void keyboard_handler(isr_t *stk)
 		*  to the above layout to correspond to 'shift' being
 		*  held. If shift is held using the larger lookup table,
 		*  you would add 128 to the scancode when you look for it */
-		byte keycode = kbdus[scancode];
+		char keycode = kbdus[scancode];
 		
 		switch(keycode)
 		{
@@ -104,8 +109,8 @@ void keyboard_handler(isr_t *stk)
 				break;
 			
 			default:
-				print_char(kbdus[scancode]);
-				update_cursor_pos();
+				last = keycode;
+				keyPressed = 1;
 				break;
 		}
 	}
@@ -114,4 +119,14 @@ void keyboard_handler(isr_t *stk)
 void keyboard_install(void)
 {
 	irq_install_handler(1, keyboard_handler);
+}
+
+char kgetch_blocking(void)
+{
+	keyPressed = 0;
+
+	while(keyPressed == 0)
+		halt_cpu();
+
+	return last;
 }
