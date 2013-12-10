@@ -8,3 +8,4 @@ STAGE2.BIN: stage2.asm
 
 clean:
 	-@rm -f bootloader.bin STAGE2.BIN
+	@echo Cleaned
