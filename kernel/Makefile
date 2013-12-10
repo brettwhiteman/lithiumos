@@ -6,7 +6,7 @@ DEPFILES := $(patsubst %.c,%.d,$(SRCFILES))
 WARNINGS := -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
             -Wwrite-strings -Wmissing-prototypes -Wmissing-declarations \
             -Wredundant-decls -Wnested-externs -Winline -Wno-long-long \
-            -Wuninitialized -Wconversion -Wstrict-prototypes
+            -Wuninitialized -Wconversion -Wstrict-prototypes -Werror-implicit-function-declaration
 CFLAGS := -std=c99 $(WARNINGS) -Iinclude -ffreestanding -nostartfiles -nostdlib
 CC := i586-elf-gcc
 ASMFILES := $(shell find $(PROJDIRS) -type f -name '*.asm' | grep -v loader.asm)
