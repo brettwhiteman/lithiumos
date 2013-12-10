@@ -37,7 +37,7 @@ struct memoryMapEntry
  
 } __attribute__((__packed__));
 
-void initialise_memory(void* ptrMemoryMap, uint32_t uiMemoryMapEntryCount);
+void initialise_memory(void *ptrMemoryMap, uint32_t uiMemoryMapEntryCount);
 
 void kmain(void *ptrMemoryMap, uint32_t memoryMapEntryCount)
 {
@@ -111,7 +111,25 @@ void kmain(void *ptrMemoryMap, uint32_t memoryMapEntryCount)
 
 	uint32_t id = scheduler_add_process((void *)TEST2_BIN, sizeof(TEST2_BIN));
 
-	//scheduler_add_thread(id, (void *)0x1000);
+	if(id == 0)
+		print_string("Adding process failed!\n");
+	else
+	{
+		char buf[12] = {0};
+		itoa(id, buf, 10);
+
+		print_string("Process with ID ");
+		print_string(buf);
+		print_string(" added\n");
+
+		id = scheduler_add_thread(id, (void *)0x1000);
+
+		itoa(id, buf, 10);
+
+		print_string("Thread with ID ");
+		print_string(buf);
+		print_string(" added\n");
+	}
 
 	// Interrupts are still disabled from the stage 2 bootloader
 	enable_interrupts();
@@ -122,11 +140,11 @@ void kmain(void *ptrMemoryMap, uint32_t memoryMapEntryCount)
 	}
 }
 
-void initialise_memory(void* ptrMemoryMap, uint32_t memoryMapEntryCount)
+void initialise_memory(void *ptrMemoryMap, uint32_t memoryMapEntryCount)
 {
 	uint32_t memSize = 0;
 
-	struct memoryMapEntry* ptrMemoryMapEntry = (struct memoryMapEntry*)ptrMemoryMap;
+	struct memoryMapEntry* ptrMemoryMapEntry = (struct memoryMapEntry *)ptrMemoryMap;
 
 	print_string("Parsing BIOS memory map... ");
 
@@ -236,7 +254,7 @@ void initialise_memory(void* ptrMemoryMap, uint32_t memoryMapEntryCount)
 	print_string("GDT updated\n");
 	
 	// Un-identity-map first 4MiB
-	pde =  vmmngr_pdirectory_lookup_entry((pdirectory*)PAGEDIR_VIRTUAL_ADDRESS, 0x00000000);
+	pde =  vmmngr_pdirectory_lookup_entry((pdirectory *)PAGEDIR_VIRTUAL_ADDRESS, 0x00000000);
 	pd_entry_del_attrib(pde, PDE_PRESENT);
 
 	// The first page table (used for first 4MiB) was at 0x81000, so we can free that memory now
