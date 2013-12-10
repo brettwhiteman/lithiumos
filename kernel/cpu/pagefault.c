@@ -3,7 +3,6 @@ Lithium OS page fault handler
 */
 
 #include <pagefault.h>
-#include <print.h>
 #include <scheduler.h>
 #include <panic.h>
 
