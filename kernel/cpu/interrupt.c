@@ -160,7 +160,7 @@ void irq_handler(isr_t *stk)
 	
 	handler = irq_routines[stk->int_no - 32];
 	
-	if (handler)
+	if(handler)
 	{
 		handler(stk);
 	}
@@ -168,7 +168,7 @@ void irq_handler(isr_t *stk)
 	// If the IDT entry that was invoked was greater than or
 	// equal to 40 (meaning IRQ8 - 15), then we need to send an
 	// EOI to the slave controller
-	if (stk->int_no >= 40)
+	if(stk->int_no >= 40)
 	{
 		outportb(0xA0, 0x20);
 	}
@@ -196,7 +196,10 @@ void install_irqs(void)
 {
 	irq_remap();
 
+	// Timer
 	register_interrupt(32, (uint32_t)_irq0, 0x08, 0x8E);
+
+	// Keyboard
 	register_interrupt(33, (uint32_t)_irq1, 0x08, 0x8E);
 
 	// System call IRQ

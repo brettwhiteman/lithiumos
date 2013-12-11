@@ -65,10 +65,8 @@ inline bool vmmngr_switch_pdirectory(physical_addr pd_physical)
 	if(!pd_physical)
 		return FALSE;
 	
-	disable_interrupts();
 	currentDirectory = pd_physical;
 	pmmngr_set_cr3(currentDirectory);
-	enable_interrupts();
 	
 	return TRUE;
 }

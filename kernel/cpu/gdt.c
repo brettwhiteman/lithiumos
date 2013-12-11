@@ -40,15 +40,17 @@ void gdt_set_entry(uint32_t num, uint64_t descriptor)
 	*(uint64_t *)(GDT_ADDRESS + num * sizeof(uint64_t)) = descriptor;
 }
 
-void load_gdt(uint32_t descriptorcount)
+void load_gdt(uint32_t descriptorCount, bool enableInterrupts)
 {
 	struct gdtInfo gdti;
-	gdti.size = 8 * descriptorcount - 1;
+	gdti.size = 8 * descriptorCount - 1;
 	gdti.address = GDT_ADDRESS;
 	
 	struct gdtInfo* ptr = &gdti;
 	
 	disable_interrupts();
 	__asm__ __volatile__("lgdt %0" : : "m" (*ptr));
-	enable_interrupts();
+
+	if(enableInterrupts)
+		enable_interrupts();
 }

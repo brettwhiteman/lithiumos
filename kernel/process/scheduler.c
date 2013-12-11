@@ -182,7 +182,7 @@ void scheduler_setup_tss(void)
 
 	gdt_set_entry(5, create_gdt_entry((uint32_t)tss + 104, (uint32_t)tss, 0x89, 0x4));
 
-	load_gdt(6);
+	load_gdt(6, FALSE);
 	
 	__asm__ __volatile__("ltr %%ax" : : "a" (0x2B)); // Selector is 0x28 with RPL 3 so 0x2B
 }

@@ -48,7 +48,6 @@ void timer_handler(isr_t *stk)
 	stk->edi = regs.edi;
 	stk->esi = regs.esi;
 	stk->ebp = regs.ebp;
-	stk->esp = regs.esp;
 	stk->ebx = regs.ebx;
 	stk->edx = regs.edx;
 	stk->ecx = regs.ecx;

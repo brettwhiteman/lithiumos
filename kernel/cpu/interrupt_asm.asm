@@ -36,63 +36,63 @@ global _isr31
 ;  0: Divide By Zero Exception
 _isr0:
     cli
-    push byte 0    ; A normal ISR stub that pops a dummy error code to keep a uniform stack frame
-    push byte 0
+    push 0    ; A normal ISR stub that pops a dummy error code to keep a uniform stack frame
+    push 0
     jmp isr_common_stub
 
 ;  1: Debug Exception
 _isr1:
     cli
-    push byte 0
-    push byte 1
+    push 0
+    push 1
     jmp isr_common_stub
     
 ; 2:  	Non Maskable Interrupt Exception
 _isr2:
     cli
-    push byte 0
-    push byte 2
+    push 0
+    push 2
     jmp isr_common_stub
     
 ;3: Breakpoint Exception
 _isr3:
     cli
-    push byte 0
-    push byte 3
+    push 0
+    push 3
     jmp isr_common_stub
     
 ;4: Into Detected Overflow Exception
 _isr4:
     cli
-    push byte 0
-    push byte 4
+    push 0
+    push 4
     jmp isr_common_stub
     
 ;5: Out of Bounds Exception
 _isr5:
     cli
-    push byte 0
-    push byte 5
+    push 0
+    push 5
     jmp isr_common_stub
     
 ;6: Invalid Opcode Exception
 _isr6:
     cli
-    push byte 0
-    push byte 6
+    push 0
+    push 6
     jmp isr_common_stub
     
 ;7: No Coprocessor Exception
 _isr7:
     cli
-    push byte 0
-    push byte 7
+    push 0
+    push 7
     jmp isr_common_stub
 
 ;  8: Double Fault Exception
 _isr8:
     cli
-    push byte 8        ; Note that we DON'T push a value on the stack in this one!
+    push 8        ; Note that we DON'T push a value on the stack in this one!
                    ; It pushes one already! Use this type of stub for exceptions that pop error codes!
     jmp isr_common_stub
     
@@ -100,178 +100,178 @@ _isr8:
 ;9: Coprocessor Segment Overrun Exception
 _isr9:
     cli
-    push byte 0
-    push byte 9
+    push 0
+    push 9
     jmp isr_common_stub
     
     
 ;10: Bad TSS Exception
 _isr10:
     cli
-    push byte 10
+    push 10
     jmp isr_common_stub
     
     
 ;11: Segment Not Present Exception
 _isr11:
     cli
-    push byte 11
+    push 11
     jmp isr_common_stub
     
     
 ;12: Stack Fault Exception
 _isr12:
     cli
-    push byte 12
+    push 12
     jmp isr_common_stub
     
     
 ;13: General Protection Fault Exception
 _isr13:
     cli
-    push byte 13
+    push 13
     jmp isr_common_stub
     
     
 ;14: Page Fault Exception
 _isr14:
     cli
-    push byte 14
+    push 14
     jmp isr_common_stub
     
     
 ;15: Unknown Interrupt Exception
 _isr15:
     cli
-    push byte 0
-    push byte 15
+    push 0
+    push 15
     jmp isr_common_stub
     
     
 ;16: Coprocessor Fault Exception
 _isr16:
     cli
-    push byte 0
-    push byte 16
+    push 0
+    push 16
     jmp isr_common_stub
     
     
 ;17: Alignment Check Exception (486+)
 _isr17:
     cli
-    push byte 0
-    push byte 17
+    push 0
+    push 17
     jmp isr_common_stub
     
     
 ;18: Machine Check Exception (Pentium/586+)
 _isr18:
     cli
-    push byte 0
-    push byte 18
+    push 0
+    push 18
     jmp isr_common_stub
     
     
 ;19: Reserved Exception
 _isr19:
     cli
-    push byte 0
-    push byte 19
+    push 0
+    push 19
     jmp isr_common_stub
     
     
 ;20: Reserved Exception
 _isr20:
     cli
-    push byte 0
-    push byte 20
+    push 0
+    push 20
     jmp isr_common_stub
     
     
 ;21: Reserved Exception
 _isr21:
     cli
-    push byte 0
-    push byte 21
+    push 0
+    push 21
     jmp isr_common_stub
     
 ;22: Reserved Exception
 _isr22:
     cli
-    push byte 0
-    push byte 22
+    push 0
+    push 22
     jmp isr_common_stub
     
     
 ;23: Reserved Exception
 _isr23:
     cli
-    push byte 0
-    push byte 23
+    push 0
+    push 23
     jmp isr_common_stub
     
     
 ;24: Reserved Exception
 _isr24:
     cli
-    push byte 0
-    push byte 24
+    push 0
+    push 24
     jmp isr_common_stub
     
     
 ;25: Reserved Exception
 _isr25:
     cli
-    push byte 0
-    push byte 25
+    push 0
+    push 25
     jmp isr_common_stub
     
     
 ;26: Reserved Exception
 _isr26:
     cli
-    push byte 0
-    push byte 26
+    push 0
+    push 26
     jmp isr_common_stub
     
     
 ;27: Reserved Exception
 _isr27:
     cli
-    push byte 0
-    push byte 27
+    push 0
+    push 27
     jmp isr_common_stub
     
     
 ;28: Reserved Exception
 _isr28:
     cli
-    push byte 0
-    push byte 28
+    push 0
+    push 28
     jmp isr_common_stub
     
     
 ;29: Reserved Exception
 _isr29:
     cli
-    push byte 0
-    push byte 29
+    push 0
+    push 29
     jmp isr_common_stub
     
     
 ;30: Reserved Exception
 _isr30:
     cli
-    push byte 0
-    push byte 30
+    push 0
+    push 30
     jmp isr_common_stub
     
     
 ;31: Reserved Exception
 _isr31:
     cli
-    push byte 0
-    push byte 31
+    push 0
+    push 31
     jmp isr_common_stub
 
 
@@ -299,7 +299,7 @@ isr_common_stub:
     mov eax, esp   ; Push us the stack
     push eax
     mov eax, fault_handler
-    call eax       ; A special call, preserves the 'eip' register
+    call eax
     pop eax
     pop gs
     pop fs
@@ -331,113 +331,113 @@ global _irq15
 ; 32: IRQ0
 _irq0:
 	cli
-	push byte 0
-	push byte 32
+	push 0
+	push 32
 	jmp irq_common_stub
     
  ; 33: IRQ1 
 _irq1:
 	cli
-	push byte 0
-	push byte 33
+	push 0
+	push 33
 	jmp irq_common_stub
 	
-; 34: IRQ2	The switch_task() function takes the saved registers_t as the argument, and should be called by the IRQ0 handler. 
+; 34: IRQ2
 _irq2:
 	cli
-	push byte 0
-	push byte 34
+	push 0
+	push 34
 	jmp irq_common_stub
 	
 ; 35: IRQ3	
 _irq3:
 	cli
-	push byte 0
-	push byte 35
+	push 0
+	push 35
 	jmp irq_common_stub
 	
 ; 36: IRQ4	
 _irq4:
 	cli
-	push byte 0
-	push byte 36
+	push 0
+	push 36
 	jmp irq_common_stub
 	
 ; 37: IRQ5	
 _irq5:
 	cli
-	push byte 0
-	push byte 37
+	push 0
+	push 37
 	jmp irq_common_stub
 	
 ; 38: IRQ6	
 _irq6:
 	cli
-	push byte 0
-	push byte 38
+	push 0
+	push 38
 	jmp irq_common_stub
 	
 ; 39: IRQ7	
 _irq7:
 	cli
-	push byte 0
-	push byte 39
+	push 0
+	push 39
 	jmp irq_common_stub
 	
 ; 40: IRQ8	
 _irq8:
 	cli
-	push byte 0
-	push byte 40
+	push 0
+	push 40
 	jmp irq_common_stub
 	
 ; 41: IRQ9	
 _irq9:
 	cli
-	push byte 0
-	push byte 41
+	push 0
+	push 41
 	jmp irq_common_stub
 	
 ; 42: IRQ10	
 _irq10:
 	cli
-	push byte 0
-	push byte 42
+	push 0
+	push 42
 	jmp irq_common_stub
 	
 ; 43: IRQ11	
 _irq11:
 	cli
-	push byte 0
-	push byte 43
+	push 0
+	push 43
 	jmp irq_common_stub
 	
 ; 44: IRQ12
 _irq12:
 	cli
-	push byte 0
-	push byte 44
+	push 0
+	push 44
 	jmp irq_common_stub
 	
 ; 45: IRQ13
 _irq13:
 	cli
-	push byte 0
-	push byte 45
+	push 0
+	push 45
 	jmp irq_common_stub
 	
 ; 46: IRQ14
 _irq14:
 	cli
-	push byte 0
-	push byte 46
+	push 0
+	push 46
 	jmp irq_common_stub
 	
 ; 47: IRQ15
 _irq15:
 	cli
-	push byte 0
-	push byte 47
+	push 0
+	push 47
 	jmp irq_common_stub
 	
 extern irq_handler
