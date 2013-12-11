@@ -1,10 +1,5 @@
 /*
 ******** BMW's kernel memory allocator version 0.2 29/11/2013 ********
-This code is provided on the basis that you use it at your own risk.
-The creator holds no resonsibility whatsoever for any damage or losses incurred
-as a result of using this code. You are free to modify and distribute
-this code as you wish.
-__________________________________________________________________
 
 This kernel memory allocator requires access to the following:
 
