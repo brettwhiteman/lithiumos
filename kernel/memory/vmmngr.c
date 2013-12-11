@@ -80,19 +80,21 @@ physical_addr vmmngr_get_directory(void)
 
 void vmmngr_flush_tlb_entry(virtual_addr addr)
 {
-	__asm__ __volatile__("invlpg (%0)" : : "r" (addr) : "memory");
+	void *a = (void *)addr;
+
+	__asm__ __volatile__("invlpg %0" : : "m" (*a) : "memory");
 }
 
-void vmmngr_flush_tlb_1024(virtual_addr addr)
-{
-	disable_interrupts();
-	for(int i = 0; i < 1024; i++)
-	{
-		__asm__ __volatile__("invlpg (%0)" : : "r" (addr) : "memory");
-		addr += 4096;
-	}
-	enable_interrupts();
-}
+// void vmmngr_flush_tlb_1024(virtual_addr addr)
+// {
+// 	disable_interrupts();
+// 	for(int i = 0; i < 1024; i++)
+// 	{
+// 		__asm__ __volatile__("invlpg (%0)" : : "r" (addr) : "memory");
+// 		addr += 4096;
+// 	}
+// 	enable_interrupts();
+// }
 
 bool vmmngr_map_page(physical_addr phys, virtual_addr virt)
 {
@@ -123,7 +125,6 @@ bool vmmngr_map_page(physical_addr phys, virtual_addr virt)
 	
 	pt_entry_set_frame(pte, phys);
 	pt_entry_add_attrib(pte, PTE_PRESENT);
-	vmmngr_flush_tlb_entry(virt);
 
 	return TRUE;
 }
