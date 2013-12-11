@@ -109,6 +109,8 @@ void kmain(void *ptrMemoryMap, uint32_t memoryMapEntryCount)
 
 	//scheduler_add_thread(id, (void *)0x1000);
 
+	disable_interrupts();
+
 	uint32_t id = scheduler_add_process((void *)TEST2_BIN, sizeof(TEST2_BIN));
 
 	if(id == 0)
@@ -122,11 +124,11 @@ void kmain(void *ptrMemoryMap, uint32_t memoryMapEntryCount)
 		print_string(buf);
 		print_string(" added\n");
 
-		id = scheduler_add_thread(id, (void *)0x1000);
+		id = scheduler_add_process((void *)TEST2_BIN, sizeof(TEST2_BIN));
 
 		itoa(id, buf, 10);
 
-		print_string("Thread with ID ");
+		print_string("Process with ID ");
 		print_string(buf);
 		print_string(" added\n");
 	}

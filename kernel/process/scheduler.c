@@ -82,6 +82,7 @@ void scheduler_switch_process(registers_t *regs)
 	memcpy(regs, &currentThread->regs, sizeof(registers_t));
 
 	vmmngr_map_page(currentProc->pdPhysical, PAGEDIR_TEMP);
+	vmmngr_flush_tlb_entry(PAGEDIR_TEMP);
 
 	uint32_t pdOffset = PAGE_DIRECTORY_INDEX(0xC0000000) * 4;
 
@@ -113,6 +114,8 @@ uint32_t scheduler_add_process(void *procBinary, size_t procBinarySize)
 
 		return 0;
 	}
+
+	vmmngr_flush_tlb_entry(PAGEDIR_TEMP);
 
 	pdirectory *pd = (pdirectory *)PAGEDIR_TEMP;
 
@@ -184,6 +187,9 @@ void scheduler_setup_tss(void)
 	__asm__ __volatile__("ltr %%ax" : : "a" (0x2B)); // Selector is 0x28 with RPL 3 so 0x2B
 }
 
+/*
+Called upon a page fault with 0xDEADBEEF as EIP
+*/
 uint32_t scheduler_setup_current_thread(isr_t *stk)
 {
 	// Set proper entry point
@@ -192,14 +198,14 @@ uint32_t scheduler_setup_current_thread(isr_t *stk)
 	// Only set up paging and copy binary if we haven't already
 	if(currentProc->binarySize != 0)
 	{
-		uint32_t pagesToMap = currentProc->binarySize + PAGE_SIZE - (stk->eip & (PAGE_SIZE - 1));
+		uint32_t pagesToMap = currentProc->binarySize + PAGE_SIZE;// - (stk->eip & (PAGE_SIZE - 1));
 
 		// Round up to nearest page
-		if(pagesToMap & 0x00000FFF)
+		if(pagesToMap & (PAGE_SIZE - 1))
 		{
 			pagesToMap += PAGE_SIZE;
 
-			pagesToMap &= 0xFFFFF000;
+			pagesToMap &= ~(PAGE_SIZE - 1);
 		}
 
 		pagesToMap /= PAGE_SIZE;
@@ -219,6 +225,8 @@ uint32_t scheduler_setup_current_thread(isr_t *stk)
 			pt_entry *pte = (pt_entry *)((uint32_t)get_ptable_address(addr) + PAGE_TABLE_INDEX(addr) * 4);
 
 			pt_entry_add_attrib(pte, PTE_USER);
+
+			vmmngr_flush_tlb_entry(addr);
 		}
 
 		memcpy((void *)stk->eip, currentProc->loadBinaryFrom, currentProc->binarySize);
@@ -241,6 +249,8 @@ uint32_t scheduler_setup_current_thread(isr_t *stk)
 
 	pt_entry_add_attrib(pte, PTE_USER);
 
+	vmmngr_flush_tlb_entry(stackLoc);
+
 	// Set stack pointer
 	stk->useresp = (uint32_t)stackLoc + 0x1000;
 
@@ -260,7 +270,6 @@ uint32_t scheduler_add_thread(uint32_t procID, void *entryPoint)
 		p = p->next;
 	}
 
-	// Process now found
 	if(p == NULL)
 		return 0;
 
