@@ -21,7 +21,7 @@ KERNEL.BIN: $(OBJFILES) $(ASMOBJ) loader.asmo linker.ld
 	@$(CC) $(CFLAGS) -T linker.ld -o KERNEL.BIN $(OBJFILES) $(ASMOBJ)
 
 %.asmo: %.asm Makefile
-	$(ASM) -f elf -o $@ $<
+	@$(ASM) -f elf -o $@ $<
 
 %.o: %.c Makefile
 	@$(CC) $(CFLAGS) -MD -MP -c $< -o $@
