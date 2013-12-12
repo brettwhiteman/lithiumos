@@ -1,0 +1,7 @@
+#ifndef FUNCCODES_H
+#define FUNCCODES_H
+
+#define FUNC_CODE_PRINT 	0x00000000
+#define FUNC_CODE_GETFILESIZE 	0x00000001
+
+#endif
