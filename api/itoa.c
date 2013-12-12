@@ -40,12 +40,13 @@ void itoa(int value, char *str, int base)
 
 	// Reverse
 	uint32_t start = 0, end = i - 1;
+	char temp = 0;
 
 	while(start < end)
 	{
-		str[start] += str[end];
-		str[end] = str[start] - str[end];
-		str[start] -= str[end];
+		temp = str[end];
+		str[end] = str[start];
+		str[start] = temp;
 		++start;
 		--end;
 	}
