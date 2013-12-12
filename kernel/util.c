@@ -4,9 +4,9 @@ Lithium OS utilities.
 
 #include <util.h>
 
-const static char *numberChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+static const char *numberChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-void *memset(byte *ptr, byte value, uint32_t count)
+void *memset(byte *ptr, byte value, size_t count)
 {
 	for(uint32_t i = 0; i < count; i++)
 	{
@@ -16,7 +16,7 @@ void *memset(byte *ptr, byte value, uint32_t count)
 	return (void *)ptr;
 }
 
-void* memsetd(uint32_t *ptr, uint32_t value, uint32_t count)
+void* memsetd(uint32_t *ptr, uint32_t value, size_t count)
 {
 	for(uint32_t i = 0; i < count; i++)
 	{

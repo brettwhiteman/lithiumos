@@ -3,8 +3,8 @@
 
 #include <types.h>
 
-void* memset(byte* dest, byte val, uint32_t count);
-void* memsetd(uint32_t* dest, uint32_t val, uint32_t count);
+void* memset(byte* dest, byte val, size_t count);
+void* memsetd(uint32_t* dest, uint32_t val, size_t count);
 byte inportb (uint16_t port);
 void outportb(uint16_t port, byte data);
 void itoa(uint32_t number, char* buf, uint32_t base);
