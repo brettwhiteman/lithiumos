@@ -9,12 +9,8 @@ char *itoa(int value, char *str, int base)
 		str[0] = '0';
 		str[1] = 0;
 
-		return;
+		return str;
 	}
-
-	// Sanity check
-	if(base <= 0)
-		return;
 
 	bool negative = FALSE;
 
@@ -29,8 +25,8 @@ char *itoa(int value, char *str, int base)
 
 	while(val != 0)
 	{
-		uint32_t rem = val % (uint32_t)base;
-		val /= (uint32_t)base;
+		uint32_t rem = val % base;
+		val /= base;
 		str[i++] = (rem > 9) ? ('A' + rem - 10) : ('0' + rem);
 	}
 
