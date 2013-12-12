@@ -37,6 +37,6 @@ void vmmngr_flush_tlb_1024(virtual_addr addr);
 bool vmmngr_map_page (physical_addr phys, virtual_addr virt);
 void vmmngr_ptable_clear(ptable *pt);
 bool vmmngr_alloc_page(virtual_addr virt);
-ptable* get_ptable_address(virtual_addr addr);
+ptable* vmmngr_get_ptable_address(virtual_addr addr);
 
 #endif

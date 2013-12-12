@@ -37,7 +37,7 @@ void vmmngr_free_page(virtual_addr addr)
 {
 	pt_entry *pte;
 
-	pte = (void *)get_ptable_address(addr) + PAGE_TABLE_INDEX(addr);
+	pte = (void *)vmmngr_get_ptable_address(addr) + PAGE_TABLE_INDEX(addr);
 
 	pmmngr_free_block((physical_addr)pt_entry_frame(*pte));
 	
@@ -115,10 +115,10 @@ bool vmmngr_map_page(physical_addr phys, virtual_addr virt)
 		pd_entry_add_attrib(pde, PDE_PRESENT);
 		pd_entry_add_attrib(pde, PDE_WRITABLE);
 		pd_entry_set_frame(pde, (physical_addr)newpt);
-		vmmngr_ptable_clear(get_ptable_address(virt));
+		vmmngr_ptable_clear(vmmngr_get_ptable_address(virt));
 	}
 	
-	ptable *pt = get_ptable_address(virt);
+	ptable *pt = vmmngr_get_ptable_address(virt);
 	pt_entry *pte = &pt->entries[PAGE_TABLE_INDEX(virt)];
 	
 	pt_entry_set_frame(pte, phys);
@@ -154,10 +154,10 @@ bool vmmngr_alloc_page(virtual_addr virt)
 		pd_entry_add_attrib(pde, PDE_PRESENT);
 		pd_entry_add_attrib(pde, PDE_WRITABLE);
 		pd_entry_set_frame(pde, (physical_addr)newpt);
-		vmmngr_ptable_clear(get_ptable_address(virt));
+		vmmngr_ptable_clear(vmmngr_get_ptable_address(virt));
 	}
 	
-	ptable *pt = get_ptable_address(virt);
+	ptable *pt = vmmngr_get_ptable_address(virt);
 	
 	pt_entry *pte = &pt->entries[PAGE_TABLE_INDEX(virt)];
 	
@@ -170,7 +170,7 @@ bool vmmngr_alloc_page(virtual_addr virt)
 	return TRUE;
 }
 
-ptable *get_ptable_address(virtual_addr addr)
+ptable *vmmngr_get_ptable_address(virtual_addr addr)
 {
 	return (ptable *)(PAGE_TABLES_ADDR + PAGE_DIRECTORY_INDEX(addr) * PAGE_SIZE);
 }
