@@ -5,3 +5,4 @@
 *.BIN
 os.img
 api/lilibc
+lishell/lishell
