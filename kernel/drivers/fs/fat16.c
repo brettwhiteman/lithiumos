@@ -1,12 +1,11 @@
 #include <fat16.h>
-#include <kmalloc.h>
 
 #define SECTOR_SIZE 512
 #define ROOT_DIR_ENTRY_SIZE 32
 
 struct fat16BPB
 {
-	byte jmpBoot[3];
+	uint8_t jmpBoot[3];
 	char oemName[8];
 	uint16_t bytesPerSector;
 	uint8_t sectorsPerCluster;
@@ -32,8 +31,8 @@ struct fat16RootDirEntry
 {
 	char fileName[8];
 	char fileExt[3];
-	byte attrib;
-	byte zero;
+	uint8_t attrib;
+	uint8_t zero;
 	uint8_t creationTimeTenthSecond;
 	uint16_t creationTime;
 	uint16_t creationDate;
@@ -44,20 +43,3 @@ struct fat16RootDirEntry
 	uint16_t firstClusterLow;
 	uint32_t size;
 } __attribute__ ((__packed__));
-
-/*
-Reads a file from a FAT16 filesystem into a specified buffer.
-The storage device will be determined from the file path.
-*/
-bool fat16_read_file(char* filePath, void* buffer)
-{
-	return FALSE;
-}
-
-/*
-Reads sector(s) from a FAT16 filesystem.
-*/
-bool fat16_read_sectors()
-{
-	return FALSE;
-}

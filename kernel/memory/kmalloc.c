@@ -34,7 +34,7 @@ you could use it to store information about the memory request.
 #define PAGE_SIZE 4096
 #define MIN_BLOCK_SIZE 4
 
-extern byte _KERNEL_END_;
+extern uint32_t _KERNEL_END_;
 
 static void *KHEAP_START;
 

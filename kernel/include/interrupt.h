@@ -15,7 +15,7 @@ struct idtInfo;
 
 void set_idt(struct idtInfo* idti);
 void setup_interrupts(void);
-void register_interrupt(byte num, uint32_t base, uint16_t sel, byte flags);
+void register_interrupt(uint8_t num, uint32_t base, uint16_t sel, uint8_t flags);
 void fault_handler(isr_t *stk);
 void install_isrs(void);
 void irq_handler(isr_t *stk);

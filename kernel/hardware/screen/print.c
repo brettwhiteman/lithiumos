@@ -5,7 +5,7 @@ Lithium OS text mode printing functions.
 #include <print.h>
 
 static uint32_t curX = 0, curY = 0;
-static byte colour = 0x07;
+static uint8_t colour = 0x07;
 static void* ptrVidMem = (void*)0x000B8000;
 
 void print_char(char c)
@@ -104,7 +104,7 @@ void clear_screen(void)
 	update_cursor_pos();
 }
 
-inline void set_colour(byte c)
+inline void set_colour(uint8_t c)
 {
 	colour = c;
 }
@@ -124,7 +124,7 @@ void set_vid_mem(void *vmem)
 	ptrVidMem = vmem;
 }
 
-inline byte get_colour(void)
+inline uint8_t get_colour(void)
 {
 	return colour;
 }

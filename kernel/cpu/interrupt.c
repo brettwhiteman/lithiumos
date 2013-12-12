@@ -33,13 +33,13 @@ void setup_interrupts(void)
 	struct idtInfo idti;
 	idti.limit = ((sizeof(struct idtDescriptor) * 256) - 1);
 	idti.base_address = (uint32_t)&idt;
-	memset((byte *)&idt, 0, (sizeof(struct idtDescriptor) * 256));
+	memset((uint8_t *)&idt, 0, (sizeof(struct idtDescriptor) * 256));
 	set_idt(&idti);
 	install_isrs();
 	install_irqs();
 }
 
-void register_interrupt(uint8_t num, uint32_t base, uint16_t sel, byte flags)
+void register_interrupt(uint8_t num, uint32_t base, uint16_t sel, uint8_t flags)
 {
 	idt[num].offset_1 = base & 0x0000FFFF;
 	idt[num].offset_2 = base >> 16;

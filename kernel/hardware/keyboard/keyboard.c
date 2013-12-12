@@ -56,7 +56,7 @@ static const char kbdus[128] =
 
 void keyboard_handler(isr_t *stk)
 {
-	byte scancode;
+	uint8_t scancode;
 
 	/* Read from the keyboard's data buffer */
 	scancode = inportb(0x60);

@@ -1,7 +1,8 @@
 #include <stdlib.h>
 #include <types.h>
+#include <string.h>
 
-void itoa(int value, char *str, int base)
+char *itoa(int value, char *str, int base)
 {
 	if(value == 0)
 	{
@@ -38,16 +39,7 @@ void itoa(int value, char *str, int base)
 
 	str[i] = 0;
 
-	// Reverse
-	uint32_t start = 0, end = i - 1;
-	char temp = 0;
+	strrev(str);
 
-	while(start < end)
-	{
-		temp = str[end];
-		str[end] = str[start];
-		str[start] = temp;
-		++start;
-		--end;
-	}
+	return str;
 }

@@ -27,7 +27,7 @@ bool ata_wait_until_not_busy(uint32_t timeout_ms)
 	return TRUE;
 }
 
-inline void ata_send_command(byte command)
+inline void ata_send_command(uint8_t command)
 {
 	outportb(ATA_PORT_COMMAND_STATUS, command);
 }

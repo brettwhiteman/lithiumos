@@ -237,7 +237,7 @@ uint32_t scheduler_setup_current_thread(isr_t *stk)
 			uint32_t zeroSpace = eli.segs[i].sizeInMemory - eli.segs[i].sizeInFile;
 
 			if(zeroSpace > 0)
-				memset((byte *)(eli.segs[i].addressInMemory + eli.segs[i].sizeInFile), 0x00, zeroSpace);
+				memset((uint8_t *)(eli.segs[i].addressInMemory + eli.segs[i].sizeInFile), 0x00, zeroSpace);
 		}
 
 		// So we know we have set it up

@@ -6,7 +6,7 @@ Lithium OS utilities.
 
 static const char *numberChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-void *memset(byte *ptr, byte value, size_t count)
+void *memset(uint8_t *ptr, unsigned char value, size_t count)
 {
 	for(uint32_t i = 0; i < count; i++)
 	{
@@ -26,9 +26,9 @@ void* memsetd(uint32_t *ptr, uint32_t value, size_t count)
 	return (void *)ptr;
 }
 
-inline byte inportb(uint16_t port)
+inline uint8_t inportb(uint16_t port)
 {
-	byte ret;
+	uint8_t ret;
 
 	__asm__ __volatile__ ("inb %%dx,%%al" : "=a" (ret) : "d" (port));
 
@@ -44,7 +44,7 @@ inline uint16_t inportw(uint16_t port)
 	return ret;
 }
 
-inline void outportb(uint16_t port, byte data)
+inline void outportb(uint16_t port, uint8_t data)
 {
 	__asm__ __volatile__ ("outb %%al,%%dx" : : "d" (port), "a" (data));
 }

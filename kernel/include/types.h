@@ -3,7 +3,6 @@
 
 typedef signed char int8_t;
 typedef unsigned char uint8_t;
-typedef unsigned char byte;
 typedef short int16_t;
 typedef unsigned short uint16_t;
 typedef long int32_t;
@@ -17,6 +16,6 @@ typedef uint32_t bool;
 #define FALSE (bool)0
 #define TRUE (bool)1
 
-#define  NULL (void *)0
+#define NULL (void *)0
 
 #endif
