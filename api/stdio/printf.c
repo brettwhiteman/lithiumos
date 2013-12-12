@@ -4,10 +4,10 @@
 struct print_info
 {
 	unsigned char attrib;
-	char *string;
+	const char *string;
 } __attribute__((__packed__));
 
-void printf(char *string, unsigned char attrib)
+void printf(const char *string, unsigned char attrib)
 {
 	struct print_info pi;
 	pi.string = string;

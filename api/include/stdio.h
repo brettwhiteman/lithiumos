@@ -1,1 +1,1 @@
-void printf(char *string, unsigned char attrib);
+void printf(const char *string, unsigned char attrib);
