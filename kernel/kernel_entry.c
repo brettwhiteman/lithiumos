@@ -16,7 +16,7 @@ Lithium OS kernel initialisation
 #include <scheduler.h>
 #include <kmalloc.h>
 
-#include "testprog.h"
+#include "lishell.h"
 
 #define PAGEDIR_PHYSICAL_ADDRESS	0x00080000
 #define PAGEDIR_VIRTUAL_ADDRESS		0xFFFFF000
@@ -59,7 +59,7 @@ void kmain(void *ptrMemoryMap, uint32_t memoryMapEntryCount)
 	// Install the system call interrupt handler
 	irq_install_handler(2, call_handler);
 
-	uint32_t id = scheduler_add_process((void *)TEST_BIN, sizeof(TEST_BIN));
+	uint32_t id = scheduler_add_process((void *)lishell, sizeof(lishell));
 
 	if(id == 0)
 		print_string("Adding process failed!\n");
