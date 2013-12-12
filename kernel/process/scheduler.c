@@ -18,6 +18,7 @@ Task scheduler for Lithium OS.
 #include <gdt.h>
 #include <pde.h>
 #include <pte.h>
+#include <elf.h>
 
 #define PAGEDIR_TEMP 			0xFFBFF000
 #define PAGEDIR_VIRTUAL_ADDRESS	0xFFFFF000
@@ -133,8 +134,6 @@ uint32_t scheduler_add_process(void *procBinary, size_t procBinarySize)
 
 	proc->threads->next = NULL;
 
-	proc->threads->entryPoint = (void *)0x1000;
-
 	proc->threads->id = ++(proc->threadIDCounter);
 
 	registers_t *pRegs = &proc->threads->regs;
@@ -192,44 +191,54 @@ Called upon a page fault with 0xDEADBEEF as EIP
 */
 uint32_t scheduler_setup_current_thread(isr_t *stk)
 {
-	// Set proper entry point
-	stk->eip = (uint32_t)currentThread->entryPoint;
-
 	// Only set up paging and copy binary if we haven't already
 	if(currentProc->binarySize != 0)
 	{
-		uint32_t pagesToMap = currentProc->binarySize + PAGE_SIZE;// - (stk->eip & (PAGE_SIZE - 1));
+		// Parse ELF
+		void *elf = currentProc->loadBinaryFrom;
 
-		// Round up to nearest page
-		if(pagesToMap & (PAGE_SIZE - 1))
+		struct elf_load_info eli;
+
+		if(elf32_parse(elf, &eli))
+			return ERR_INVALID_ELF_EXECUTABLE;
+
+		stk->eip = eli.entryPoint;
+
+		for(uint32_t i = 0; i < eli.numSegs; ++i)
 		{
-			pagesToMap += PAGE_SIZE;
+			uint32_t sizeToMap = eli.segs[i].sizeInMemory + PAGE_SIZE;
 
-			pagesToMap &= ~(PAGE_SIZE - 1);
+			if(sizeToMap & (PAGE_SIZE - 1))
+			{
+				sizeToMap += PAGE_SIZE;
+				sizeToMap &= ~(PAGE_SIZE - 1);
+			}
+
+			for(int i = 0; i < sizeToMap; i += PAGE_SIZE)
+			{
+				virtual_addr addr = eli.segs[i].addressInMemory + i;
+
+				if(!vmmngr_alloc_page(addr))
+					return ERR_OUT_OF_MEMORY;
+
+				pd_entry *pde = vmmngr_pdirectory_lookup_entry(PAGEDIR_VIRTUAL_ADDRESS, addr);
+				pd_entry_add_attrib(pde, PDE_USER);
+
+				pt_entry *pte = (pt_entry *)((uint32_t)vmmngr_get_ptable_address(addr)
+					+ PAGE_TABLE_INDEX(addr) * 4);
+				pt_entry_add_attrib(pte, PTE_USER);
+			}
+
+			// Copy segment to correct location
+			memcpy((void *)eli.segs[i].addressInMemory, (uint32_t)elf + eli.segs[i].offsetInFile,
+				eli.segs[i].sizeInFile);
+
+			// Zero any extra memory space
+			uint32_t zeroSpace = eli.segs[i].sizeInMemory - eli.segs[i].sizeInFile;
+
+			if(zeroSpace > 0)
+				memset((byte *)(eli.segs[i].addressInMemory + eli.segs[i].sizeInFile), 0x00, zeroSpace);
 		}
-
-		pagesToMap /= PAGE_SIZE;
-
-		// Map size of binary starting at entry point
-		for(uint32_t i = 0; i < pagesToMap; ++i)
-		{
-			virtual_addr addr = i * PAGE_SIZE + stk->eip;
-
-			if(!vmmngr_alloc_page(addr))
-				return ERR_OUT_OF_MEMORY;
-
-			pd_entry *pde = (pd_entry *)(PAGEDIR_VIRTUAL_ADDRESS + PAGE_DIRECTORY_INDEX(addr) * 4);
-
-			pd_entry_add_attrib(pde, PDE_USER);
-
-			pt_entry *pte = (pt_entry *)((uint32_t)get_ptable_address(addr) + PAGE_TABLE_INDEX(addr) * 4);
-
-			pt_entry_add_attrib(pte, PTE_USER);
-
-			vmmngr_flush_tlb_entry(addr);
-		}
-
-		memcpy((void *)stk->eip, currentProc->loadBinaryFrom, currentProc->binarySize);
 
 		// So we know we have set it up
 		currentProc->binarySize = 0;
@@ -245,7 +254,7 @@ uint32_t scheduler_setup_current_thread(isr_t *stk)
 
 	pd_entry_add_attrib(pde, PDE_USER);
 
-	pt_entry *pte = (pt_entry *)((uint32_t)get_ptable_address(stackLoc) + PAGE_TABLE_INDEX(stackLoc) * 4);
+	pt_entry *pte = (pt_entry *)((uint32_t)vmmngr_get_ptable_address(stackLoc) + PAGE_TABLE_INDEX(stackLoc) * 4);
 
 	pt_entry_add_attrib(pte, PTE_USER);
 
