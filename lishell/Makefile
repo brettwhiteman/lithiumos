@@ -13,7 +13,7 @@ all: lishell
 
 -include $(DEPFILES)
 
-lishell: $(OBJFILES)
+lishell: $(OBJFILES) ../api/lilibc
 	@$(CC) $(CFLAGS) -T linker.ld -o lishell $(OBJFILES) ../api/lilibc
 
 %.o: %.c Makefile
