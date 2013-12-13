@@ -129,12 +129,10 @@ uint32_t scheduler_add_process(void *procBinary, size_t procBinarySize)
 	process_t *proc = (process_t *)kmalloc(sizeof(process_t));
 
 	proc->threadIDCounter = 0;
-
 	proc->threads = (thread_t *)kmalloc(sizeof(thread_t));
-
 	proc->threads->next = NULL;
-
 	proc->threads->id = ++(proc->threadIDCounter);
+	proc->blockedThreads = NULL;
 
 	registers_t *pRegs = &proc->threads->regs;
 
@@ -176,8 +174,8 @@ void scheduler_setup_tss(void)
 
 	memset(tss, 0, 104);
 
-	*(uint32_t *)(tss + 4) = (uint32_t)stack + 1024; // Stack grows down so add 1024 to start at top
-	*(uint32_t *)(tss + 8) = 0x10; // Kernel data descriptor
+	*(uint32_t *)((uint32_t)tss + 4) = (uint32_t)stack + 1024; // Stack grows down so add 1024 to start at top
+	*(uint32_t *)((uint32_t)tss + 8) = 0x10; // Kernel data descriptor
 
 	gdt_set_entry(5, create_gdt_entry((uint32_t)tss + 104, (uint32_t)tss, 0x89, 0x4));
 
@@ -211,17 +209,17 @@ uint32_t scheduler_setup_current_thread(isr_t *stk)
 			if(sizeToMap & (PAGE_SIZE - 1))
 			{
 				sizeToMap += PAGE_SIZE;
-				sizeToMap &= ~(PAGE_SIZE - 1);
+				sizeToMap &= (uint32_t)(~(PAGE_SIZE - 1));
 			}
 
-			for(int i = 0; i < sizeToMap; i += PAGE_SIZE)
+			for(uint32_t j = 0; j < sizeToMap; j += PAGE_SIZE)
 			{
-				virtual_addr addr = eli.segs[i].addressInMemory + i;
+				virtual_addr addr = eli.segs[i].addressInMemory + j;
 
 				if(!vmmngr_alloc_page(addr))
 					return ERR_OUT_OF_MEMORY;
 
-				pd_entry *pde = vmmngr_pdirectory_lookup_entry(PAGEDIR_VIRTUAL_ADDRESS, addr);
+				pd_entry *pde = vmmngr_pdirectory_lookup_entry((pdirectory *)PAGEDIR_VIRTUAL_ADDRESS, addr);
 				pd_entry_add_attrib(pde, PDE_USER);
 
 				pt_entry *pte = (pt_entry *)((uint32_t)vmmngr_get_ptable_address(addr)
@@ -230,7 +228,7 @@ uint32_t scheduler_setup_current_thread(isr_t *stk)
 			}
 
 			// Copy segment to correct location
-			memcpy((void *)eli.segs[i].addressInMemory, (uint32_t)elf + eli.segs[i].offsetInFile,
+			memcpy((void *)eli.segs[i].addressInMemory, (const void *)((uint32_t)elf + eli.segs[i].offsetInFile),
 				eli.segs[i].sizeInFile);
 
 			// Zero any extra memory space

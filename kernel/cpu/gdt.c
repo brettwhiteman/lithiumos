@@ -29,8 +29,8 @@ uint64_t create_gdt_entry(uint32_t limit, uint32_t base, uint8_t access, uint8_t
 	gdte.baseLow = base & 0xFFFF;
 	gdte.baseMid = (base >> 16) & 0xFF;
 	gdte.access = access;
-	gdte.granularity = ((limit >> 16) & 0xF) | ((granularity << 4) & 0xF0);
-	gdte.baseHigh = (base & 0xFF000000) >> 24;
+	gdte.granularity = ((uint8_t)(limit >> 16) & 0xF) | ((granularity << 4) & 0xF0);
+	gdte.baseHigh = (uint8_t)((base & 0xFF000000) >> 24);
 	
 	return *(uint64_t *)&gdte;
 }

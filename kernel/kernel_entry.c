@@ -66,7 +66,7 @@ void kmain(void *ptrMemoryMap, uint32_t memoryMapEntryCount)
 	else
 	{
 		char buf[12] = {0};
-		itoa(id, buf, 10);
+		itoa((int)id, buf, 10);
 
 		print_string("Process with ID ");
 		print_string(buf);
@@ -133,7 +133,7 @@ void initialise_memory(void *ptrMemoryMap, uint32_t memoryMapEntryCount)
 	// Calculate usable memory in KiB
 	uint32_t usableMem = pmmngr_get_free_block_count() * PAGE_SIZE / 1024;
 	char printBuf[12] = {0};
-	itoa(usableMem, printBuf, 10);
+	itoa((int)usableMem, printBuf, 10);
 	print_string("Initialised ");
 	print_string(printBuf);
 	print_string(" KiB of usable memory\n");

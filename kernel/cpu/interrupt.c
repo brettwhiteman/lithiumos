@@ -41,8 +41,8 @@ void setup_interrupts(void)
 
 void register_interrupt(uint8_t num, uint32_t base, uint16_t sel, uint8_t flags)
 {
-	idt[num].offset_1 = base & 0x0000FFFF;
-	idt[num].offset_2 = base >> 16;
+	idt[num].offset_1 = (uint16_t)(base & 0x0000FFFF);
+	idt[num].offset_2 = (uint16_t)(base >> 16);
 	idt[num].selector = sel;
 	idt[num].zero = 0;
 	idt[num].type_attr = flags;

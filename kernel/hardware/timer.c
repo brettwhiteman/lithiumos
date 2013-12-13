@@ -11,8 +11,8 @@ void set_timer_frequency(uint32_t hz)
 {
 	uint32_t divisor = 1193180 / hz;       /* Calculate our divisor */
 	outportb(0x43, 0x36);             /* Set our command byte 0x36 */
-	outportb(0x40, divisor & 0xFF);   /* Set low byte of divisor */
-	outportb(0x40, divisor >> 8);     /* Set high byte of divisor */
+	outportb(0x40, (uint8_t)(divisor & 0xFF));   /* Set low byte of divisor */
+	outportb(0x40, (uint8_t)(divisor >> 8));     /* Set high byte of divisor */
 }
 
 void timer_handler(isr_t *stk)

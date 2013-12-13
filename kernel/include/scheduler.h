@@ -23,6 +23,7 @@ typedef struct thread_struct
 typedef struct process_struct
 {
 	thread_t *threads;
+	thread_t *blockedThreads;
 	physical_addr pdPhysical;
 	struct process_struct *next;
 	void *loadBinaryFrom;

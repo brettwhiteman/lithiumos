@@ -37,7 +37,7 @@ void vmmngr_free_page(virtual_addr addr)
 {
 	pt_entry *pte;
 
-	pte = (void *)vmmngr_get_ptable_address(addr) + PAGE_TABLE_INDEX(addr);
+	pte = (pt_entry *)((uint32_t)vmmngr_get_ptable_address(addr) + PAGE_TABLE_INDEX(addr));
 
 	pmmngr_free_block((physical_addr)pt_entry_frame(*pte));
 	

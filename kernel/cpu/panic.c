@@ -60,12 +60,12 @@ void panic_display_message(isr_t *stk)
 
 	// Print error code
 	print_string_at("Error code: ", 18, 10);
-	itoa(stk->err_code, buf, 16);
+	itoa((int)stk->err_code, buf, 16);
 	print_string(buf);
 
 	// Print register values
 	print_string_at("EIP: ", 18, 11);
-	itoa(stk->eip, buf, 16);
+	itoa((int)stk->eip, buf, 16);
 	print_string(buf);
 
 	// Hide cursor
