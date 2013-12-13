@@ -49,7 +49,7 @@ static const char kbdus[128] =
 	0, // All other keys are undefined
 };
 
-static const char kbdus_uppercase[128] =
+static const char kbdusUppercase[128] =
 {
 	0,  27, '!', '@', '#', '$', '%', '^', '&', '*',
 	'(', ')', '_', '+', '\b', // Backspace
@@ -123,7 +123,7 @@ void keyboard_handler(isr_t *stk)
 		char keycode = 0;
 
 		if(keyShift)
-			keycode = kbdus_uppercase[scancode];
+			keycode = kbdusUppercase[scancode];
 		else
 			keycode = kbdus[scancode];
 		
