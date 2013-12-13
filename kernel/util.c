@@ -4,16 +4,16 @@ Lithium OS utilities.
 
 #include <util.h>
 
-static const char *numberChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-void *memset(uint8_t *ptr, unsigned char value, size_t count)
+void *memset(void *ptr, int value, size_t count)
 {
+	uint8_t *p = (uint8_t *)ptr;
+
 	for(uint32_t i = 0; i < count; i++)
 	{
-		ptr[i] = value;
+		p[i] = (uint8_t)value;
 	}
 
-	return (void *)ptr;
+	return ptr;
 }
 
 void* memsetd(uint32_t *ptr, uint32_t value, size_t count)
@@ -49,40 +49,42 @@ inline void outportb(uint16_t port, uint8_t data)
 	__asm__ __volatile__ ("outb %%al,%%dx" : : "d" (port), "a" (data));
 }
 
-void itoa(uint32_t number, char *buf, uint32_t base)
+char *itoa(int value, char *str, int base)
 {
-	// Sanity check
-	if((base == 0) || (base > 36))
-		return;
+	if(value == 0)
+	{
+		str[0] = '0';
+		str[1] = 0;
 
-	char buf2[16] = {0};
-	uint32_t num = 0;
-	uint32_t c = 0;
-	uint32_t c2 = 0;
-	
-	while(number != 0)
-	{
-		num = number % base;
-		number /= base;
-		buf2[c] = numberChars[num];
-		c++;
+		return str;
 	}
-	
-	c2 = c;
-	
-	for(uint32_t i = 0; i < c2; i++)
+
+	bool negative = FALSE;
+
+	if((value < 0) && (base == 10))
 	{
-		c--;
-		buf[i] = buf2[c];
+		negative = TRUE;
+		value *= -1;
 	}
-	
-	buf[c2] = 0;
-	
-	if(buf[0] == 0)
+
+	uint32_t val = (uint32_t)value;
+	uint32_t i = 0;
+
+	while(val != 0)
 	{
-		buf[0] = '0';
-		buf[1] = 0;
+		uint32_t rem = val % base;
+		val /= base;
+		str[i++] = (rem > 9) ? ('A' + rem - 10) : ('0' + rem);
 	}
+
+	if(negative)
+		str[i++] = '-';
+
+	str[i] = 0;
+
+	strrev(str);
+
+	return str;
 }
 
 inline void disable_interrupts(void)
@@ -120,5 +122,31 @@ void memcpy(void *dest, const void *source, size_t num)
 	for(uint32_t i = 0; i < num; ++i)
 	{
 		((uint8_t *)dest)[i] = ((uint8_t *)source)[i];
+	}
+}
+
+size_t strlen(const char *str)
+{
+	size_t len = 0;
+
+	while(str[len] != 0)
+		++len;
+
+	return len;
+}
+
+void strrev(char *str)
+{
+	uint32_t start = 0;
+	uint32_t end = strlen((const char *)str) - 1;
+	char temp = 0;
+
+	while(start < end)
+	{
+		temp = str[end];
+		str[end] = str[start];
+		str[start] = temp;
+		++start;
+		--end;
 	}
 }
