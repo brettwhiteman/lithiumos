@@ -2,7 +2,7 @@
 
 void main(void)
 {
-	printf("Hello World!\n", 0x30);
+	printf("Lithium OS> ");
 
 	while(1); // Stop it from returning to nowhere
 }

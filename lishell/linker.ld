@@ -24,4 +24,7 @@ SECTIONS
     {
         *(.bss)
     }
+
+    /* For malloc() */
+    __end = .;
 }

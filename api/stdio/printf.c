@@ -1,8 +1,8 @@
-#include <funccodes.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <types.h>
 #include <stdlib.h>
+#include <syscalls.h>
 
 #define PRINTF_BUF_LEN 64
 
@@ -25,79 +25,70 @@ void printf(const char *format, ...)
 		{
 			switch(format[++i])
 			{
-			case 'd':
-				if((PRINTF_BUF_LEN - bc - 1) < 12)
-				{
-					// Not enough buffer space
-					buf[bc] = 0;
+				case 'd':
+					if((PRINTF_BUF_LEN - bc - 1) < 12)
+					{
+						// Not enough buffer space
+						buf[bc] = 0;
 
-					__asm__ __volatile__("movl %0, %%ebx\n"
-										 "movl %1, %%eax"
-										 : : "r" (buf), "i" (FUNC_CODE_PRINT));
-					__asm__ __volatile__("int $0x22");
+						sc_print_string(buf);
 
-					bc = 0;
+						bc = 0;
 
-					itoa(va_arg(va, int), &buf[bc], 10);
+						itoa(va_arg(va, int), &buf[bc], 10);
 
-					while(buf[++bc] != 0);
-				}
-				else
-				{
-					itoa(va_arg(va, int), &buf[bc], 10);
+						while(buf[++bc] != 0);
+					}
+					else
+					{
+						itoa(va_arg(va, int), &buf[bc], 10);
 
-					while(buf[++bc] != 0);
-				}
+						while(buf[++bc] != 0);
+					}
 
-				break;
+					break;
 
-			case 'c':
-				if((PRINTF_BUF_LEN - bc - 1) < 1)
-				{
-					// Not enough buffer space
-					buf[bc] = 0;
+				case 'c':
+					if((PRINTF_BUF_LEN - bc - 1) < 1)
+					{
+						// Not enough buffer space
+						buf[bc] = 0;
 
-					__asm__ __volatile__("movl %0, %%ebx\n"
-										 "movl %1, %%eax"
-										 : : "r" (buf), "i" (FUNC_CODE_PRINT));
-					__asm__ __volatile__("int $0x22");
+						sc_print_string(buf);
 
-					bc = 0;
+						bc = 0;
 
-					buf[bc++] = (char)va_arg(va, int);
-				}
-				else
-				{
-					buf[bc++] = (char)va_arg(va, int);
-				}
+						buf[bc++] = (char)va_arg(va, int);
+					}
+					else
+					{
+						buf[bc++] = (char)va_arg(va, int);
+					}
 
-				break;
+					break;
 
-			case 'x':
-				if((PRINTF_BUF_LEN - bc - 1) < 10)
-				{
-					// Not enough buffer space
-					buf[bc] = 0;
+				case 'x':
+					if((PRINTF_BUF_LEN - bc - 1) < 10)
+					{
+						// Not enough buffer space
+						buf[bc] = 0;
 
-					__asm__ __volatile__("movl %0, %%ebx\n"
-										 "movl %1, %%eax"
-										 : : "r" (buf), "i" (FUNC_CODE_PRINT));
-					__asm__ __volatile__("int $0x22");
+						sc_print_string(buf);
 
-					bc = 0;
+						bc = 0;
 
-					itoa(va_arg(va, int), &buf[bc], 16);
+						itoa(va_arg(va, int), &buf[bc], 16);
 
-					while(buf[++bc] != 0);
-				}
-				else
-				{
-					itoa(va_arg(va, int), &buf[bc], 16);
+						while(buf[++bc] != 0);
+					}
+					else
+					{
+						itoa(va_arg(va, int), &buf[bc], 16);
 
-					while(buf[++bc] != 0);
-				}
+						while(buf[++bc] != 0);
+					}
 
-				break;
+					break;
 			}
 		}
 		else
@@ -108,10 +99,7 @@ void printf(const char *format, ...)
 			{
 				buf[bc] = 0;
 
-				__asm__ __volatile__("movl %0, %%ebx\n"
-									 "movl %1, %%eax"
-									 : : "r" (buf), "i" (FUNC_CODE_PRINT));
-				__asm__ __volatile__("int $0x22");
+				sc_print_string(buf);
 
 				bc = 0;
 			}
@@ -124,9 +112,6 @@ void printf(const char *format, ...)
 	{
 		buf[bc] = 0;
 
-		__asm__ __volatile__("movl %0, %%ebx\n"
-							 "movl %1, %%eax"
-							 : : "r" (buf), "i" (FUNC_CODE_PRINT));
-		__asm__ __volatile__("int $0x22");
+		sc_print_string(buf);
 	}
 }
