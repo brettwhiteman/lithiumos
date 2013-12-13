@@ -6,52 +6,87 @@ Lithium OS keyboard setup/handling functions.
 #include <stdinc.h>
 #include <print.h>
 
-static bool _key_shift = 0;
-//static bool _key_control = 0;
-//static bool _key_alt = 0;
-static bool _capslock = 0;
-
-static volatile bool keyPressed = 0;
-static volatile char last = 0;
+static bool keyShift = 0;
+static bool capsLockOn = 0;
 
 static const char kbdus[128] =
 {
-	0,  27, '1', '2', '3', '4', '5', '6', '7', '8',	/* 9 */
-	'9', '0', '-', '=', '\b',	/* Backspace */
-	'\t',			/* Tab */
-	'q', 'w', 'e', 'r',	/* 19 */
-	't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n',	/* Enter key */
-	0,			/* 29   - Control */
-	'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';',	/* 39 */
-	'\'', '`',   2,		/* Left shift */
-	'\\', 'z', 'x', 'c', 'v', 'b', 'n',			/* 49 */
-	'm', ',', '.', '/',   3,				/* Right shift */
+	0,  27, '1', '2', '3', '4', '5', '6', '7', '8',
+	'9', '0', '-', '=', '\b', // Backspace
+	'\t', // Tab
+	'q', 'w', 'e', 'r',
+	't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n', // Enter
+	0, // 29 - Control
+	'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';',
+	'\'', '`',   2, // Left Shift
+	'\\', 'z', 'x', 'c', 'v', 'b', 'n',
+	'm', ',', '.', '/',   3, // Right Shift
 	'*',
-	0,	/* Alt */
-	' ',	/* Space bar */
-	1,	/* Caps lock */
-	0,	/* 59 - F1 key ... > */
+	0, // Alt
+	' ', // Space
+	1, // Caps Lock
+	0, // F1 ...
 	0,   0,   0,   0,   0,   0,   0,   0,
-	0,	/* < ... F10 */
-	0,	/* 69 - Num lock*/
-	0,	/* Scroll Lock */
-	0,	/* Home key */
-	0,	/* Up Arrow */
-	0,	/* Page Up */
+	0, // F10
+	0, // Num Lock
+	0, // Scroll Lock
+	0, // Home
+	0, // Up Arrow
+	0, // Page Up
 	'-',
-	0,	/* Left Arrow */
+	0, // Left Arrow
 	0,
-	0,	/* Right Arrow */
+	0, // Right Arrow
 	'+',
-	0,	/* 79 - End key*/
-	0,	/* Down Arrow */
-	0,	/* Page Down */
-	0,	/* Insert Key */
-	0,	/* Delete Key */
+	0, // End
+	0, // Down
+	0, // Page Down
+	0, // Insert
+	0, // Delete
 	0,   0,   0,
-	0,	/* F11 Key */
-	0,	/* F12 Key */
-	0,	/* All other keys are undefined */
+	0, // F11
+	0, // F12
+	0, // All other keys are undefined
+};
+
+static const char kbdus_uppercase[128] =
+{
+	0,  27, '!', '@', '#', '$', '%', '^', '&', '*',
+	'(', ')', '_', '+', '\b', // Backspace
+	'\t', // Tab
+	'Q', 'W', 'E', 'R',
+	'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', '\n', // Enter
+	0, // 29 - Control
+	'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ':',
+	'\"', '~',   2, // Left Shift
+	'|', 'Z', 'X', 'C', 'V', 'B', 'N',
+	'M', '<', '>', '?',   3, // Right Shift
+	'*',
+	0, // Alt
+	' ', // Space
+	1, // Caps Lock
+	0, // F1 ...
+	0,   0,   0,   0,   0,   0,   0,   0,
+	0, // F10
+	0, // Num Lock
+	0, // Scroll Lock
+	0, // Home
+	0, // Up Arrow
+	0, // Page Up
+	'-',
+	0, // Left Arrow
+	0,
+	0, // Right Arrow
+	'+',
+	0, // End
+	0, // Down
+	0, // Page Down
+	0, // Insert
+	0, // Delete
+	0,   0,   0,
+	0, // F11
+	0, // F12
+	0, // All other keys are undefined
 };
 
 void keyboard_handler(isr_t *stk)
@@ -72,7 +107,7 @@ void keyboard_handler(isr_t *stk)
 		switch(kbdus[scancode])
 		{
 			case 2: //left shift
-				_key_shift = 0;
+				keyShift = 0;
 				break;
 			
 			default:
@@ -85,33 +120,35 @@ void keyboard_handler(isr_t *stk)
 		*  hold a key down, you will get repeated key press
 		*  interrupts. */
 
-		/* Just to show you how this works, we simply translate
-		*  the keyboard scancode into an ASCII value, and then
-		*  display it to the screen. You can get creative and
-		*  use some flags to see if a shift is pressed and use a
-		*  different layout, or you can add another 128 entries
-		*  to the above layout to correspond to 'shift' being
-		*  held. If shift is held using the larger lookup table,
-		*  you would add 128 to the scancode when you look for it */
-		char keycode = kbdus[scancode];
+		char keycode = 0;
+
+		if(keyShift)
+			keycode = kbdus_uppercase[scancode];
+		else
+			keycode = kbdus[scancode];
 		
 		switch(keycode)
 		{
+			case 0:
+				// Do nothing
+				break;
+
 			case 1: //caps lock
-				if(_capslock)
-					_capslock = 0;
-				else
-					_capslock = 1;
+				capsLockOn = !capsLockOn;
 				break;
 			
 			case 2: //left shift
-				_key_shift = 1;
+				keyShift = 1;
 				break;
 			
 			default:
-				last = keycode;
-				keyPressed = 1;
+			{
+				char buf[2] = {0};
+				buf[0] = keycode;
+				buf[1] = 0;
+				print_string(buf);
 				break;
+			}
 		}
 	}
 }
@@ -119,14 +156,4 @@ void keyboard_handler(isr_t *stk)
 void keyboard_install(void)
 {
 	irq_install_handler(1, keyboard_handler);
-}
-
-char kgetch_blocking(void)
-{
-	keyPressed = 0;
-
-	while(keyPressed == 0)
-		halt_cpu();
-
-	return last;
 }

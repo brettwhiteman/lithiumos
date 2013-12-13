@@ -20,6 +20,9 @@ void print_char(char c)
 			break;
 		
 		case '\b':
+			if((curX == 0) && (curY == 0))
+				break;
+			
 			p += curY * SCREEN_COLS * 2;
 			p += curX * 2;
 			p -= 2;
@@ -61,13 +64,20 @@ void print_char(char c)
 		++curY;
 	}
 
-	if(curY >= SCREEN_ROWS)
+	if(curY == SCREEN_ROWS)
 	{
-		// TODO: Make screen scroll (in progress)
-		//p = (char *)ptrVidMem + SCREEN_COLS * 2;
-		//memcpy((void *)ptrVidMem, (const void *)p, (SCREEN_ROWS - 1) * SCREEN_COLS * 2);
-		//memset()
-		curY = 0;
+		p = (char *)ptrVidMem + SCREEN_COLS * 2;
+		memcpy((void *)ptrVidMem, (const void *)p, (SCREEN_ROWS - 1) * SCREEN_COLS * 2);
+
+		char *ptr = (void *)(ptrVidMem + SCREEN_COLS * (SCREEN_ROWS - 1) * 2);
+
+		for(uint32_t i = 0; i < SCREEN_COLS * 2; i += 2)
+		{
+			ptr[i] = ' ';
+			ptr[i + 1] = (char)colour;
+		}
+
+		--curY;
 	}
 }
 
@@ -98,11 +108,13 @@ void print_string_at(const char *s, uint32_t x, uint32_t y)
 
 void clear_screen(void)
 {
-	curX = 0;
-	curY = 0;
+	char *ptr = ptrVidMem;
 
-	for(uint32_t i = 0; i < SCREEN_COLS * SCREEN_ROWS; i++)
-		print_char(' ');
+	for(uint32_t i = 0; i < SCREEN_COLS * SCREEN_ROWS * 2; i += 2)
+	{
+		ptr[i] = ' ';
+		ptr[i + 1] = (char)colour;
+	}
 
 	curX = 0;
 	curY = 0;
