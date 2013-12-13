@@ -26,7 +26,7 @@ static const char kbdus[128] =
 	' ', // Space
 	1, // Caps Lock
 	0, // F1 ...
-	0,   0,   0,   0,   0,   0,   0,   0,
+	0, 0, 0, 0, 0, 0, 0, 0,
 	0, // F10
 	0, // Num Lock
 	0, // Scroll Lock
@@ -43,7 +43,7 @@ static const char kbdus[128] =
 	0, // Page Down
 	0, // Insert
 	0, // Delete
-	0,   0,   0,
+	0, 0, 0,
 	0, // F11
 	0, // F12
 	0, // All other keys are undefined
@@ -96,12 +96,11 @@ void keyboard_handler(isr_t *stk)
 	/* Read from the keyboard's data buffer */
 	scancode = inportb(0x60);
 
-	/* If the top bit of the byte we read from the keyboard is
-	*  set, that means that a key has just been released */
+	// MSB set means key released
 	if (scancode & 0x80)
 	{
-		/* You can use this one to see if the user released the
-		*  shift, alt, or control keys... */
+		// Key released
+
 		scancode = scancode & 0x7F; //unset highest bit
 
 		switch(kbdus[scancode])
@@ -116,13 +115,11 @@ void keyboard_handler(isr_t *stk)
 	}
 	else
 	{
-		/* Here, a key was just pressed. Please note that if you
-		*  hold a key down, you will get repeated key press
-		*  interrupts. */
+		// Key pressed
 
 		char keycode = 0;
 
-		if(keyShift)
+		if(keyShift || (capsLockOn && (kbdus[scancode] >= 'a') && (kbdus[scancode] <= 'z')))
 			keycode = kbdusUppercase[scancode];
 		else
 			keycode = kbdus[scancode];
