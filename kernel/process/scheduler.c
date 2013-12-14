@@ -19,9 +19,9 @@ Task scheduler for Lithium OS.
 #include <pde.h>
 #include <pte.h>
 #include <elf.h>
+#include <vmmngr.h>
 
 #define PAGEDIR_TEMP 			0xFFBFF000
-#define PAGEDIR_VIRTUAL_ADDRESS	0xFFFFF000
 
 process_t *pQueue = NULL;
 process_t *currentProc = NULL;
@@ -88,11 +88,11 @@ void scheduler_switch_process(registers_t *regs)
 	uint32_t pdOffset = PAGE_DIRECTORY_INDEX(0xC0000000) * 4;
 
 	// Copy kernel address space
-	memcpy((void *)(PAGEDIR_TEMP + pdOffset), (void *)(PAGEDIR_VIRTUAL_ADDRESS + pdOffset),
+	memcpy((void *)(PAGEDIR_TEMP + pdOffset), (void *)(PAGE_DIRECTORY_ADDRESS + pdOffset),
 		PAGE_DIRECTORY_SIZE - pdOffset);
 
 	// Update physical address of page directory to match new process (recursive paging)
-	pd_entry *pde = vmmngr_pdirectory_lookup_entry((pdirectory *)PAGEDIR_TEMP, PAGEDIR_VIRTUAL_ADDRESS);
+	pd_entry *pde = vmmngr_pdirectory_lookup_entry((pdirectory *)PAGEDIR_TEMP, PAGE_DIRECTORY_ADDRESS);
 	pd_entry_set_frame(pde, currentProc->pdPhysical);
 
 	vmmngr_switch_pdirectory(currentProc->pdPhysical);
@@ -168,7 +168,7 @@ uint32_t scheduler_add_process(void *procBinary, size_t procBinarySize)
 
 void scheduler_setup_tss(void)
 {
-	void *stack = kmalloc(1024);
+	void *stack = kmalloc(2048);
 
 	void *tss = kmalloc(104);
 
@@ -219,7 +219,7 @@ uint32_t scheduler_setup_current_thread(isr_t *stk)
 				if(!vmmngr_alloc_page(addr))
 					return ERR_OUT_OF_MEMORY;
 
-				pd_entry *pde = vmmngr_pdirectory_lookup_entry((pdirectory *)PAGEDIR_VIRTUAL_ADDRESS, addr);
+				pd_entry *pde = vmmngr_pdirectory_lookup_entry((pdirectory *)PAGE_DIRECTORY_ADDRESS, addr);
 				pd_entry_add_attrib(pde, PDE_USER);
 
 				pt_entry *pte = (pt_entry *)((uint32_t)vmmngr_get_ptable_address(addr)
@@ -248,7 +248,7 @@ uint32_t scheduler_setup_current_thread(isr_t *stk)
 	if(!vmmngr_alloc_page((virtual_addr)stackLoc))
 		return ERR_OUT_OF_MEMORY;
 
-	pd_entry *pde = (pd_entry *)(PAGEDIR_VIRTUAL_ADDRESS + PAGE_DIRECTORY_INDEX(stackLoc) * 4);
+	pd_entry *pde = (pd_entry *)(PAGE_DIRECTORY_ADDRESS + PAGE_DIRECTORY_INDEX(stackLoc) * 4);
 
 	pd_entry_add_attrib(pde, PDE_USER);
 

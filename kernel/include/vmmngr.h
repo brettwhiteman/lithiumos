@@ -9,6 +9,8 @@
 #define PAGES_PER_DIR		1024
 #define PAGE_SIZE 			4096
 #define PAGE_DIRECTORY_SIZE	4096
+#define PAGE_TABLES_ADDR 		0xFFC00000
+#define PAGE_DIRECTORY_ADDRESS 	0xFFFFF000
 
 #define PAGE_DIRECTORY_INDEX(x) (((x) >> 22) & 0x3ff)
 #define PAGE_TABLE_INDEX(x) (((x) >> 12) & 0x3ff)

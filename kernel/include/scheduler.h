@@ -2,7 +2,6 @@
 #define SCHEDULER_H
 
 #include <stdinc.h>
-#include <vmmngr.h>
 #include <interrupt.h>
 
 typedef struct
@@ -24,7 +23,7 @@ typedef struct process_struct
 {
 	thread_t *threads;
 	thread_t *blockedThreads;
-	physical_addr pdPhysical;
+	uint32_t pdPhysical;
 	struct process_struct *next;
 	void *loadBinaryFrom;
 	size_t binarySize;

@@ -4,9 +4,6 @@ Lithium OS virtual memory manager.
 
 #include <vmmngr.h>
 
-#define PAGE_TABLES_ADDR 		0xFFC00000
-#define PAGE_DIRECTORY_ADDRESS 	0xFFFFF000
-
 physical_addr currentDirectory = 0;
 
 bool vmmngr_init(physical_addr pd_physical)
@@ -135,7 +132,7 @@ void vmmngr_ptable_clear(ptable *pt)
 bool vmmngr_alloc_page(virtual_addr virt)
 {
 	pdirectory *pd = (pdirectory *)PAGE_DIRECTORY_ADDRESS;
-	pd_entry *pde = &pd->entries [PAGE_DIRECTORY_INDEX(virt)];
+	pd_entry *pde = &pd->entries[PAGE_DIRECTORY_INDEX(virt)];
 	
 	if((!pd) || (!pde))
 		return FALSE;
