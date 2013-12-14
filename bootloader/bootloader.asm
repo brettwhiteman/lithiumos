@@ -54,7 +54,7 @@ bootloader_start:
 	mov ax, 0x07E0 ;set up stack space
 	cli ;clear interrupts while changing stack
 	mov ss, ax ;set stack segment
-	mov sp, 0x400 ;set stack pointer (1KiB of stack)
+	mov esp, 0x400 ;set stack pointer (1KiB of stack)
 	sti ;restore interrupts
 	xor ax, ax
 	mov ds, ax ;make sure the data segment is 0
@@ -111,7 +111,7 @@ bootloader_start:
 	call load_file
 	
 	jmp 0x0000:0x0700 ;execute Stage2
-	
+
 	cli
 	hlt
 
@@ -144,14 +144,14 @@ found_file:
 
 	;load cluster
 .loop_load_cluster:
-	mov bx, [esp + 6]
-	mov ax, word [ss:esp] ;get cluster into ax
+	mov ax, [esp]
 	sub ax, 2 ;first 2 FAT entries are reserved
 	movzx dx, byte [bpbSectorsPerCluster]
 	mul word dx
 	add ax, word [datasector]
 	mov cx, ax ;first sector to load in cx
 	xor dx, dx ;segment in dx (0x0)
+	mov bx, [esp + 6]
 	mov al, byte [bpbSectorsPerCluster] ;load 1 cluster
 	call load_sector
 

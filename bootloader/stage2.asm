@@ -6,7 +6,7 @@ jmp 0x0000:stage2_start
 %define KernelAddress 0x8200
 %define KernelVirtAddress 0xC0000000
 %define NewKernelAddress 0x01000000
-%define MemMapAddress 0x00000900
+%define MemMapAddress 0x00000B00
 %define PageDirAddress 0x80000
 %define PageTableAddress1 0x81000
 %define PageTableAddress2 0x82000
@@ -14,7 +14,7 @@ jmp 0x0000:stage2_start
 %define StackLoc 0x00080000
 %define StackLocVirtualAddress 0xF0001000
 
-mmap_entries dw 0x0000
+mmapEntries dw 0x0000
 memSize dd 0x00000000
 
 ;GDT--------------------------------------
@@ -44,12 +44,12 @@ GDTInfo:
 	
 stage2_start:
 	;load mem map
-	mov ax, 0x0000
+	xor ax, ax
 	mov es, ax
 	mov edi, MemMapAddress
 	call do_e820
 	;map entry count is in bp
-	mov word [mmap_entries], bp
+	mov word [mmapEntries], bp
 	
 	;load GDT
 	lgdt [GDTInfo]
@@ -91,7 +91,7 @@ ProtectedMode:
 	
 	;Execute Kernel
 	;push args onto stack in reverse order
-	movzx edx, word [mmap_entries]
+	movzx edx, word [mmapEntries]
 	push edx
 	mov edx, dword MemMapAddress
 	push edx
@@ -122,7 +122,7 @@ do_e820:
 	je short .failed
 	jmp short .jmpin
 .e820lp:
-	mov eax, 0xe820		; eax, ecx get trashed on every int 0x15 call
+	mov eax, 0xE820		; eax, ecx get trashed on every int 0x15 call
 	mov [es:di + 20], dword 1	; force a valid ACPI 3.X entry
 	mov ecx, 24		; ask for 24 bytes again
 	int 0x15
@@ -167,7 +167,7 @@ setup_paging:
 	;put page tables into page dir
 	mov eax, PageDirAddress
 	mov dword [eax], PageTableAddress1 + 1 ;first page dir entry (+1 sets present bit)
-	lea ebx, [eax+3072]
+	lea ebx, [eax + 3072]
 	mov dword [ebx], PageTableAddress2 + 1
 	
 	;identity map first 4mb
@@ -191,18 +191,17 @@ setup_paging:
 	jb .loop_pg3
 	
 	;map stack to 0xF0001000
-	mov eax, StackLocVirtualAddress - 0x1000 ;since stack goes downwards, we want to map the page just before the stack loc
+	mov eax, StackLocVirtualAddress - 0x1000 ;map page before stackloc as stack grows down
 	shr eax, 22
 	and eax, 0x3ff ;lowest 10 bits
-	lea ebx, [PageDirAddress + (eax * 4)]
+	lea ebx, [PageDirAddress + eax * 4]
 	mov dword [ebx], PageTableAddress3 + 1 ;+1 sets present bit
 	
 	mov eax, StackLocVirtualAddress - 0x1000
 	shr eax, 12
 	and eax, 0x3ff ;lowest 10 bits
-	lea ebx, [PageTableAddress3 + eax*4]
-	mov eax, StackLoc - 0x1000 + 1 ;kernel address + 1 for present bit - 0x1000 coz stack grows down
-	mov dword [ebx], eax
+	lea ebx, [PageTableAddress3 + eax * 4]
+	mov dword [ebx], StackLoc - 0x1000 + 1 ;+ 1 for present bit, - 0x1000 because stack grows down
 	
 	;enable paging
 	mov eax, PageDirAddress
