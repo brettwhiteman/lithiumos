@@ -2,7 +2,7 @@
 Lithium OS LIBC malloc()
 */
 
-#include <malloc.h>
+#include <stdlib.h>
 #include <syscalls.h>
 
 #define HEAP_END 0xA0000000
@@ -183,8 +183,6 @@ void *malloc(size_t bytes)
 
 			if(current->next == NULL)
 			{
-				freeSpaceAtEnd = (uint32_t)heapEnd - (uint32_t)current - sizeof(mheader_t);
-
 				last = current;
 			}
 
@@ -213,7 +211,7 @@ void *malloc(size_t bytes)
 				new = (mheader_t *)((uint32_t)last + sizeof(mheader_t) + bytes);
 
 				// Check if the new header is within heap and leaves enough room
-				if((uint32_t)new > (heapEnd - sizeof(mheader_t) - MIN_BLOCK_SIZE))
+				if((uint32_t)new > ((uint32_t)heapEnd - sizeof(mheader_t) - MIN_BLOCK_SIZE))
 				{
 					// No room for new header
 
@@ -234,14 +232,34 @@ void *malloc(size_t bytes)
 			else
 			{
 				// Have to make new header
-				new = (mheader_t *)((uint32_t)heapEnd - expand - freeSpaceAtEnd);
+				current = (mheader_t *)((uint32_t)heapEnd - expand);
 
-				last->next = new;
-				new->prev = last;
-				new->next = NULL;
-				new->status = MEM_STATUS_FREE;
+				last->next = current;
+				current->prev = last;
+				current->next = NULL;
+				current->status = MEM_STATUS_USED;
 
-				return (void *)((uint32_t)last + sizeof(mheader_t));
+				new = (mheader_t *)((uint32_t)current + sizeof(mheader_t) + bytes);
+
+				// Check if the new header is within heap and leaves enough room
+				if((uint32_t)new > ((uint32_t)heapEnd - sizeof(mheader_t) - MIN_BLOCK_SIZE))
+				{
+					// No room
+
+					return (void *)((uint32_t)current + sizeof(mheader_t));
+				}
+				else
+				{
+					// New header fits
+					current->next = new;
+					new->status = MEM_STATUS_FREE;
+					new->next = NULL;
+					new->prev = current;
+
+					return (void *)((uint32_t)current + sizeof(mheader_t));
+				}
+
+				
 			}
 		}
 		else
