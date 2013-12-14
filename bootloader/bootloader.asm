@@ -27,16 +27,6 @@ db 'LiOS Disk',0x00,0x00 ;volume label (11 bytes)
 db 'FAT16',0x00,0x00,0x00 ;file system type (8 bytes)
 ;BPB END
 
-;DAP for extended read
-dapStructure:
-	db 0x10 ;size
-	db 0x00 ;unused
-	dw 0x0000 ;sectors to read
-	dd 0x00000000 ;segment:offset pointer to memory buffer
-	dd 0x00000000 ;LBA address of sector low
-	dd 0x00000000 ;LBA address of sector high
-;END DAP
-
 stage2LoadAddress dw 0x0700
 rootDirBuffer dw 0x8200
 fatBuffer dd 0x0000
@@ -44,85 +34,84 @@ fatSegment dw 0x6C20
 bootdev db 0x80
 stage2 db 'STAGE2  BIN'
 kernel db 'KERNEL  BIN'
-noFileError db 'File(s) missing', 0x00
-loadSectorError db 'Error loading sector(s) Err: ', 0x00
+noFileError db 'File missing', 0x00
+loadSectorError db 'Err loading sector. ', 0x00
 datasector dw 0x0000
 hexc db '0123456789ABCDEF'
 
 bootloader_start:
 	mov [bootdev], dl
-	mov ax, 0x07E0 ;set up stack space
+	xor ax, ax
 	cli ;clear interrupts while changing stack
 	mov ss, ax ;set stack segment
-	mov esp, 0x400 ;set stack pointer (1KiB of stack)
+	mov esp, 0x7C00 ;set stack pointer to just below bootloader
 	sti ;restore interrupts
-	xor ax, ax
 	mov ds, ax ;make sure the data segment is 0
 	mov ax, word [fatSegment]
 	mov fs, ax ;segment for accessing the FAT in memory
-
-	;Calculate size of root directory
-	mov ax, 32 ;size of 1 root directory entry
-	mul word [bpbRootDirectoryEntries]
-	mov dx, word [bpbBytesPerSector]
-	dec dx
-	add ax, dx ;add BytesPerSector - 1 so it rounds up.
-	xor dx, dx
-	div word [bpbBytesPerSector]
-	mov cx, ax ;cx now holds size of root dir (size in sectors)
 
 
 	;Calculate location of root dir
 	mov ax, [bpbNumberOfFATS]
 	mul word [bpbSectorsPerFAT]
 	add ax, word [bpbReservedSectors]
-	;store location - it is the first data sector
-	mov bx, ax
-	add bx, cx
-	mov word [datasector], bx
+	push ax
 
-	;Load RootDir
+	;calculate first data sector
+	mov ax, [bpbRootDirectoryEntries]
+	mov cx, 32
+	mul cx
+	add ax, [bpbBytesPerSector]
+	dec ax ;add (bytes per sector - 1)
+	xor dx, dx
+	div word [bpbBytesPerSector]
+	pop dx
+	push ax
+	push dx
+	add ax, dx
+	mov word [datasector], ax ;first data sector is now in ax
+
+	;restore first sector of root dir
+	xor ecx, ecx
+	pop cx
+	pop ax ;root dir sector count
+
+	;Load root dir
 	xor dx, dx
 	mov bx, word [rootDirBuffer]
-	xchg al, cl
-	call load_sector
+	call load_sectors
 
 	;Load FAT
-	mov cx, word [bpbReservedSectors] ;location of FAT
-	xor ax, ax
-	mov al, byte [bpbNumberOfFATS]
-	mul word [bpbSectorsPerFAT] ;al now contains sector count
-	mov dx, fs
-	mov bx, [fatBuffer]
-	call load_sector
+	movzx ecx, word [bpbReservedSectors] ;starting sector
+	mov ax, word [bpbSectorsPerFAT] ;sectors to load
+	mov dx, fs ;buffer segment
+	mov bx, [fatBuffer] ;buffer offset
+	call load_sectors
 
 	;load stage 2
-	mov ax, word [stage2LoadAddress]
-	push ax
-	mov ax, stage2
-	push ax
+	push word 0 ;bufSegment
+	push word [stage2LoadAddress] ;bufOffset
+	push word stage2 ;ptrFilename
 	call load_file
 
 	;load kernel
-	mov ax, word [rootDirBuffer] ;kernel goes where root dir was
-	push ax
-	mov ax, kernel
-	push ax
+	push word 0 ;bufSegment
+	push word [rootDirBuffer] ;bufOffset
+	push word kernel ;ptrFilename
 	call load_file
-	
-	jmp 0x0000:0x0700 ;execute Stage2
 
-	cli
-	hlt
+	jmp 0x0000:0x0700 ;stage 2
 
 
 
 
-;void load_file(char *filename, void *buf)
+;void load_file(uint16_t ptrFilename, uint16_t bufOffset, uint16_t bufSegment)
 load_file:
-	mov cx, [bpbRootDirectoryEntries]
-	mov di, [rootDirBuffer]
-	mov si, [esp + 2]
+	mov bx, sp
+	lea ebp, [ss:bx]
+	mov cx, word [bpbRootDirectoryEntries]
+	mov di, word [rootDirBuffer]
+	mov si, word [ebp + 2]
 .loop_find_file:
 	push cx
 	mov cx, 11
@@ -140,32 +129,36 @@ load_file:
 found_file:
 	pop cx ;clean stack up
 	mov ax, word [di + 0x1A] ;starting cluster of file
-	push ax ;store cluster on stack
+	mov di, ax ;store cluster in di
 
 	;load cluster
 .loop_load_cluster:
-	mov ax, [esp]
+	mov ax, di
 	sub ax, 2 ;first 2 FAT entries are reserved
 	movzx dx, byte [bpbSectorsPerCluster]
 	mul word dx
 	add ax, word [datasector]
-	mov cx, ax ;first sector to load in cx
-	xor dx, dx ;segment in dx (0x0)
-	mov bx, [esp + 6]
-	mov al, byte [bpbSectorsPerCluster] ;load 1 cluster
-	call load_sector
+	movzx ecx, ax ;first sector to load in cx
+	mov dx, word [ebp + 6]
+	mov bx, word [ebp + 4]
+	movzx ax, byte [bpbSectorsPerCluster] ;load 1 cluster
 
-	pop ax
+	call load_sectors
+
+	mov ax, di
 	shl ax, 1 ;multiply by 2 since entry is 16 bits
 	add ax, [fatBuffer]
 	mov bx, ax
-	mov dx, word [fs:bx]
+	mov dx, [fs:bx]
 	cmp dx, 0xFFF8
 	jae load_file_finished
-	push dx
+	mov di, dx
 	mov ax, [bpbSectorsPerCluster]
 	mul word [bpbBytesPerSector]
-	add word [esp + 6], ax
+	xor dx, dx
+	mov cx, 16
+	div cx
+	add word [ebp + 6], ax
 	jmp .loop_load_cluster
 
 
@@ -214,18 +207,27 @@ print_hex:
 ;Loads a sector from disk.
 ;Input:
 ;DX:BX = Buffer address
-;CL = Starting sector to load
-;AL = Number of sectors to load
-load_sector:
-	mov byte [dapStructure + 2], al
-	mov word [dapStructure + 4], bx
-	mov word [dapStructure + 6], dx
-	mov byte [dapStructure + 8], cl
+;ECX = Starting sector to load
+;AX = Number of sectors to load
+load_sectors:
+	push bp
+	mov bp, sp
+	sub sp, 16 ;align stack to 16 byte boundary
+	and sp, 0xFFF0
+	;set up DAP structure
+	push dword 0
+	push dword ecx
+	push word dx
+	push word bx
+	push word ax
+	push word 0
+	mov si, sp
 	mov dl, [bootdev] ; device
-	mov si, dapStructure
 	mov ah, 0x42
 	int 0x13 ;load the sector(s)
 	jc load_sector_error
+	mov sp, bp
+	pop bp
 	ret
 	
 load_sector_error:
