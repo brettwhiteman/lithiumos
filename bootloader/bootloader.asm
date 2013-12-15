@@ -35,7 +35,7 @@ bootdev db 0x80
 stage2 db 'STAGE2  BIN'
 kernel db 'KERNEL  BIN'
 noFileError db 'File missing', 0x00
-loadSectorError db 'Err loading sector. ', 0x00
+loadSectorError db 'Err loading sector. Err: ', 0x00
 datasector dw 0x0000
 hexc db '0123456789ABCDEF'
 
@@ -62,7 +62,7 @@ bootloader_start:
 	mov cx, 32
 	mul cx
 	add ax, [bpbBytesPerSector]
-	dec ax ;add (bytes per sector - 1)
+	dec ax ; add (bytes per sector - 1)
 	xor dx, dx
 	div word [bpbBytesPerSector]
 	pop dx
@@ -71,12 +71,10 @@ bootloader_start:
 	add ax, dx
 	mov word [datasector], ax ;first data sector is now in ax
 
-	;restore first sector of root dir
+	;load root dir
 	xor ecx, ecx
-	pop cx
+	pop cx ;first sector
 	pop ax ;root dir sector count
-
-	;Load root dir
 	xor dx, dx
 	mov bx, word [rootDirBuffer]
 	call load_sectors
@@ -214,13 +212,13 @@ load_sectors:
 	mov bp, sp
 	sub sp, 16 ;align stack to 16 byte boundary
 	and sp, 0xFFF0
-	;set up DAP structure
-	push dword 0
-	push dword ecx
-	push word dx
-	push word bx
-	push word ax
-	push word 0
+	;set up DAP structure on stack
+	push dword 0 ; LBA high
+	push dword ecx ; LBA low
+	push word dx ; buffer segment
+	push word bx ; buffer offset
+	push word ax ; sector count
+	push word 0x0010 ; reserved + DAP size
 	mov si, sp
 	mov dl, [bootdev] ; device
 	mov ah, 0x42
