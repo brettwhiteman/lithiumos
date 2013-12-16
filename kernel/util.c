@@ -16,7 +16,7 @@ void *memset(void *ptr, int value, size_t count)
 	return ptr;
 }
 
-void* memsetd(uint32_t *ptr, uint32_t value, size_t count)
+void *memsetd(uint32_t *ptr, uint32_t value, size_t count)
 {
 	for(uint32_t i = 0; i < count; i++)
 	{
@@ -30,7 +30,7 @@ inline uint8_t inportb(uint16_t port)
 {
 	uint8_t ret;
 
-	__asm__ __volatile__ ("inb %%dx,%%al" : "=a" (ret) : "d" (port));
+	__asm__ __volatile__ ("inb %1, %0" : "=a" (ret) : "Nd" (port));
 
 	return ret;
 }
@@ -39,14 +39,14 @@ inline uint16_t inportw(uint16_t port)
 {
 	uint16_t ret;
 
-	__asm__ __volatile__ ("inw %%dx,%%ax" : "=a" (ret) : "d" (port));
+	__asm__ __volatile__ ("inw %1, %0" : "=a" (ret) : "Nd" (port));
 
 	return ret;
 }
 
 inline void outportb(uint16_t port, uint8_t data)
 {
-	__asm__ __volatile__ ("outb %%al,%%dx" : : "d" (port), "a" (data));
+	__asm__ __volatile__ ("outb %1, %0" : : "Nd" (port), "a" (data));
 }
 
 char *itoa(int value, char *str, int base)
@@ -89,17 +89,17 @@ char *itoa(int value, char *str, int base)
 
 inline void disable_interrupts(void)
 {
-	__asm__ __volatile__("cli");
+	__asm__ volatile ("cli");
 }
 
 inline void enable_interrupts(void)
 {
-	__asm__ __volatile__("sti");
+	__asm__ volatile ("sti");
 }
 
 inline void halt_cpu(void)
 {
-	__asm__ __volatile__("hlt");
+	__asm__ volatile ("hlt");
 }
 
 uint32_t strcmp(char *string1, char *string2)
