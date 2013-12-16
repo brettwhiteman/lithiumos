@@ -1,7 +1,8 @@
 Kernel heap ends at 0xF0000000
-0xF0000000 - 0xF0001000 - Kernel Stack
+0xF0000000 - 0xF0001FFF - Kernel Stack
 0xFFBB9000 - 0xFFBB9FFF - First 4KiB of physical mem - used for accessing GDT at offset 0x70B
 0xFFBBA000 - 0xFFBF9FFF - Memory Bitmap for physical memory manager
 0xFFBFA000 - 0xFFBFDFFF - Video Memory
 0xFFBFF000 - 0xFFBFFFFF - Temo page dir mapping used for multi-tasking
 0xFFC00000 - 0xFFFFFFFF - Page Tables/Directory
+
