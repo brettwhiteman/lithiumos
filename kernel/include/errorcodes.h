@@ -7,5 +7,6 @@
 #define ERR_INVALID_ARGS 0x3
 #define ERR_PROC_ID_NOT_FOUND 0x4
 #define ERR_INVALID_ELF_EXECUTABLE 0x5
+#define ERR_UNKNOWN 0x6
 
 #endif

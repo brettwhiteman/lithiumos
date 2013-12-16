@@ -40,5 +40,6 @@ bool vmmngr_map_page (physical_addr phys, virtual_addr virt);
 void vmmngr_ptable_clear(ptable *pt);
 bool vmmngr_alloc_page(virtual_addr virt);
 ptable* vmmngr_get_ptable_address(virtual_addr addr);
+physical_addr vmmngr_get_physical_address(virtual_addr addr);
 
 #endif

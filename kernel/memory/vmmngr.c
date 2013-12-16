@@ -171,3 +171,22 @@ ptable *vmmngr_get_ptable_address(virtual_addr addr)
 {
 	return (ptable *)(PAGE_TABLES_ADDR + PAGE_DIRECTORY_INDEX(addr) * PAGE_SIZE);
 }
+
+physical_addr vmmngr_get_physical_address(virtual_addr addr)
+{
+	pdirectory *pd = (pdirectory *)PAGE_DIRECTORY_ADDRESS;
+
+	pd_entry *pde = (pd_entry *)&pd->entries[PAGE_DIRECTORY_INDEX(addr)];
+
+	if(!pd_entry_is_present(*pde))
+		return NULL;
+
+	ptable *pt = vmmngr_get_ptable_address(addr);
+
+	pt_entry *pte = (pt_entry *)&pt->entries[PAGE_TABLE_INDEX(addr)];
+
+	if(!pt_entry_is_present(*pte))
+		return NULL;
+
+	return pt_entry_frame(*pte);
+}
