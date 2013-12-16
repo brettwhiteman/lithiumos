@@ -5,7 +5,9 @@ void sc_print_string(const char *str)
 	__asm__ volatile ("movl %0, %%ebx\n"
 				  "movl %1, %%eax\n"
 				  "int $0x22"
-				  : : "r" (str), "i" (SYSCALL_PRINT));
+				  :
+				  : "r" (str), "i" (SYSCALL_PRINT)
+				  : "ebx", "eax");
 }
 
 bool sc_virtual_alloc(uint32_t startAddr, size_t numPages)
@@ -22,4 +24,14 @@ bool sc_virtual_alloc(uint32_t startAddr, size_t numPages)
 					  : "eax", "ebx", "ecx");
 
 	return (bool)res;
+}
+
+void sc_exit(int status)
+{
+	__asm__ volatile("movl %0, %%eax\n"
+					 "movl %1, %%ebx\n"
+					 "int $0x22"
+					 :
+					 : "i" (SYSCALL_EXIT), "m" (status)
+					 : "eax", "ebx");
 }

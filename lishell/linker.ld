@@ -1,4 +1,4 @@
-ENTRY(main)
+ENTRY(__lios_startup)
 OUTPUT_FORMAT("elf32-i386")
 
 SECTIONS

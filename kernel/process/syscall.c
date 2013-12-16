@@ -2,9 +2,11 @@
 #include <print.h>
 #include <stdinc.h>
 #include <vmmngr.h>
+#include <scheduler.h>
 
 #define SYSCALL_PRINT 			0
 #define SYSCALL_VIRTUAL_ALLOC 	1
+#define SYSCALL_EXIT			2
 
 void call_handler(isr_t *stk)
 {
@@ -40,6 +42,11 @@ void call_handler(isr_t *stk)
 
 				pt_entry_add_attrib(pte, PTE_USER);
 			}
+
+			break;
+
+		case SYSCALL_EXIT:
+			scheduler_remove_current_process();
 
 			break;
 	}
