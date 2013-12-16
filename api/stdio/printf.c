@@ -26,6 +26,7 @@ void printf(const char *format, ...)
 			switch(format[++i])
 			{
 				case 'd':
+				case 'i':
 					if((PRINTF_BUF_LEN - bc - 1) < 12)
 					{
 						// Not enough buffer space
