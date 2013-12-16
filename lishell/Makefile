@@ -9,7 +9,7 @@ WARNINGS := -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
 CFLAGS := -std=c99 $(WARNINGS) -I../api/include -ffreestanding -nostartfiles -nostdlib
 CC := i586-elf-gcc
 
-all: lishell
+all: lishell inst
 
 -include $(DEPFILES)
 
@@ -23,3 +23,6 @@ clean:
 	-@rm -f $(wildcard $(OBJFILES) $(DEPFILES) lishell)
 	@echo Cleaned
 
+inst:
+	@xxd -i lishell >lishell.h
+	@mv lishell.h ../kernel
