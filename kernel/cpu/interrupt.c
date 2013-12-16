@@ -60,9 +60,7 @@ void fault_handler(isr_t *stk)
 			outportb(0x20, 0x20);
 		}
 		else
-		{	
 			panic_display_message(stk);
-		}
 	}
 }
 
@@ -161,17 +159,12 @@ void irq_handler(isr_t *stk)
 	handler = irq_routines[stk->int_no - 32];
 	
 	if(handler)
-	{
 		handler(stk);
-	}
 	
-	// If the IDT entry that was invoked was greater than or
-	// equal to 40 (meaning IRQ8 - 15), then we need to send an
-	// EOI to the slave controller
+	// If the interrupt number is greater than or equal to 40
+	// then we need to send an EOI to the slave controller
 	if(stk->int_no >= 40)
-	{
 		outportb(0xA0, 0x20);
-	}
 
 	// In either case, we need to send an EOI to the master
 	// interrupt controller too
