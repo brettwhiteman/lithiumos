@@ -225,3 +225,113 @@ void thread_add_pmem_region(thread_t *thread, uint32_t pageIndex)
 		region->next = NULL;
 	}
 }
+
+void process_destroy(process_t *proc)
+{
+	thread_t *thread = proc->threads;
+	pmem_region_t *pmr = NULL;
+	void *mem = NULL;
+
+	while(thread != NULL)
+	{
+		pmr = thread->pmemRegions;
+
+		while(pmr != NULL)
+		{
+			pmmngr_free_block((physical_addr)(pmr->pageIndex * PAGE_SIZE));
+
+			mem = (void *)pmr;
+			pmr = pmr->next;
+			kfree(mem);
+		}
+
+		mem = (void *)thread;
+		thread = thread->next;
+		kfree(mem);
+	}
+
+	thread = proc->blockedThreads;
+
+	while(thread != NULL)
+	{
+		pmr = thread->pmemRegions;
+
+		while(pmr != NULL)
+		{
+			pmmngr_free_block((physical_addr)(pmr->pageIndex * PAGE_SIZE));
+
+			mem = (void *)pmr;
+			pmr = pmr->next;
+			kfree(mem);
+		}
+
+		mem = (void *)thread;
+		thread = thread->next;
+		kfree(mem);
+	}
+
+	pmr = proc->pmemRegions;
+
+	while(pmr != NULL)
+	{
+		pmmngr_free_block((physical_addr)(pmr->pageIndex * PAGE_SIZE));
+
+		mem = pmr;
+		pmr = pmr->next;
+		kfree(mem);
+	}
+
+	kfree((void *)proc);
+}
+
+process_t *add_kernel_process(void *entry)
+{
+	physical_addr pdPhysical = (physical_addr)pmmngr_alloc_block();
+
+	if(pdPhysical == 0)
+		return NULL;
+
+	if(!vmmngr_map_page(pdPhysical, PAGEDIR_TEMP))
+	{
+		pmmngr_free_block(pdPhysical);
+
+		return NULL;
+	}
+
+	vmmngr_flush_tlb_entry(PAGEDIR_TEMP);
+
+	pdirectory *pd = (pdirectory *)PAGEDIR_TEMP;
+
+	// Clear page directory
+	memsetd((uint32_t *)pd, 0, sizeof(pdirectory) / 4);
+
+	process_t *proc = (process_t *)kmalloc(sizeof(process_t));
+
+	proc->threadIDCounter = 0;
+	proc->threads = (thread_t *)kmalloc(sizeof(thread_t));
+	proc->threads->next = NULL;
+	proc->threads->id = ++(proc->threadIDCounter);
+	proc->threads->pmemRegions = NULL;
+	proc->blockedThreads = NULL;
+
+	registers_t *pRegs = &proc->threads->regs;
+
+	pRegs->eip = (uint32_t)entry;
+	pRegs->cs = 0x08; // Kernel code selector ring 0
+	pRegs->ds = 0x10; // Kernel data selector ring 0
+	pRegs->es = pRegs->ds;
+	pRegs->fs = pRegs->ds;
+	pRegs->gs = pRegs->ds;
+	pRegs->ss = pRegs->ds;
+	pRegs->eflags = 0x202; // Standard EFLAGS
+	pRegs->useresp = (uint32_t)kmalloc(1024) + 1024;
+
+	proc->pdPhysical = pdPhysical;
+	proc->next = NULL;
+	proc->loadBinaryFrom = NULL;
+	proc->binarySize = 0;
+	proc->id = ++idCounter;
+	proc->pmemRegions = NULL;
+
+	return proc;
+}

@@ -1,14 +1,5 @@
 /*
 Task scheduler for Lithium OS.
-
-28/11/13 - BMW: Created.
-
-29/11/13 - BMW:	Added support for multiple threads per process.
-				Each process is now a container for threads.
-
-30/11/13 - BMW:	Modified scheduler_setup_current_thread() so it
-				doesn't copy binary or setup paging when it already
-				has done it.
 */
 
 #include <scheduler.h>
@@ -24,6 +15,7 @@ Task scheduler for Lithium OS.
 
 process_t *pQueue = NULL;
 process_t *currentProc = NULL;
+process_t *previousProc = NULL;
 thread_t *currentThread = NULL;
 
 void scheduler_tick(registers_t *regs)
@@ -36,7 +28,7 @@ void scheduler_tick(registers_t *regs)
 void scheduler_switch_process(registers_t *regs)
 {
 	if(pQueue == NULL)
-		return; // Scheduling not set up yet
+		return; // No processes!
 
 	if(currentProc == NULL)
 	{
@@ -54,6 +46,9 @@ void scheduler_switch_process(registers_t *regs)
 		if(currentThread->next == NULL)
 		{
 			// Switch to next process
+
+			previousProc = currentProc;
+
 			if(currentProc->next == NULL)
 			{
 				// Go back to start of queue
@@ -192,9 +187,74 @@ uint32_t scheduler_add_thread(uint32_t procID, uint32_t entryPoint)
 	return thread->next->id;
 }
 
-void scheduler_remove_current_process(void)
+void scheduler_remove_current_process(isr_t *stk)
 {
-	print_string("\nProcess requested termination, halting system...\n");
-	disable_interrupts();
-	halt_cpu();
+	process_t *procToRemove = currentProc;
+	uint32_t pdPhysical = procToRemove->pdPhysical;
+
+	previousProc->next = procToRemove->next;
+
+	registers_t regs;
+	regs.gs = stk->gs;
+	regs.fs = stk->fs;
+	regs.es = stk->es;
+	regs.ds = stk->ds;
+	regs.edi = stk->edi;
+	regs.esi = stk->esi;
+	regs.ebp = stk->ebp;
+	regs.esp = stk->esp;
+	regs.ebx = stk->ebx;
+	regs.edx = stk->edx;
+	regs.ecx = stk->ecx;
+	regs.eax = stk->eax;
+	regs.eip = stk->eip;
+	regs.cs = stk->cs;
+	regs.eflags = stk->eflags;
+	regs.useresp = stk->useresp;
+	regs.ss = stk->ss;
+
+	// This will setup the next process so that when we return, it will return
+	// to the next process, and it will also allow us to free the page directory
+	// since we will be using the next process's page directory.
+	scheduler_switch_process(&regs);
+
+	stk->gs = regs.gs;
+	stk->fs = regs.fs;
+	stk->es = regs.es;
+	stk->ds = regs.ds;
+	stk->edi = regs.edi;
+	stk->esi = regs.esi;
+	stk->ebp = regs.ebp;
+	stk->ebx = regs.ebx;
+	stk->edx = regs.edx;
+	stk->ecx = regs.ecx;
+	stk->eax = regs.eax;
+	stk->eip = regs.eip;
+	stk->cs = regs.cs;
+	stk->eflags = regs.eflags;
+	stk->useresp = regs.useresp;
+	stk->ss = regs.ss;
+
+	process_destroy(procToRemove);
+
+	pmmngr_free_block(pdPhysical);
+}
+
+uint32_t scheduler_add_kernel_process(void *entry)
+{
+	process_t *proc = add_kernel_process(entry);
+
+	process_t *p = pQueue;
+
+	if(p == NULL)
+		pQueue = proc;
+	else
+	{
+		while(p->next != NULL)
+			p = p->next;
+
+		p->next = proc;
+	}
+
+	return proc->id;
 }

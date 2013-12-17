@@ -44,5 +44,7 @@ uint32_t setup_process(process_t *proc, uint32_t *entryPoint);
 uint32_t init_thread_stack(thread_t *thread, uint32_t *pStackAddr);
 void process_add_pmem_region(process_t *proc, uint32_t pageIndex);
 void thread_add_pmem_region(thread_t *thread, uint32_t pageIndex);
+void process_destroy(process_t *proc);
+process_t *add_kernel_process(void *entry);
 
 #endif

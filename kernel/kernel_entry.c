@@ -27,7 +27,7 @@ Lithium OS kernel initialisation
 #define GDT_PHYSICAL_ADDRESS		0x00000000
 #define GDT_VIRTUAL_ADDRESS			0xFFBB9000
 
-struct memoryMapEntry
+typedef struct
 {
 	uint32_t baseL; // Base address QWORD
 	uint32_t baseH;
@@ -37,8 +37,10 @@ struct memoryMapEntry
 	uint16_t acpi; // Extended
 	uint32_t padding; // Padding to make it 24 bytes
  
-} __attribute__((__packed__));
+} __attribute__((__packed__)) mmap_entry_t;
 
+void kmain(void *ptrMemoryMap, uint32_t memoryMapEntryCount);
+void kernel_idle_loop(void);
 void initialise_memory(void *ptrMemoryMap, uint32_t uiMemoryMapEntryCount);
 
 void kmain(void *ptrMemoryMap, uint32_t memoryMapEntryCount)
@@ -59,10 +61,23 @@ void kmain(void *ptrMemoryMap, uint32_t memoryMapEntryCount)
 	// Install the system call interrupt handler
 	irq_install_handler(2, call_handler);
 
+	uint32_t idleID = scheduler_add_kernel_process((void *)kernel_idle_loop);
+
+	if(idleID == 0)
+	{
+		print_string("Adding idle process failed! System halting.\n");
+		disable_interrupts();
+		halt_cpu();
+	}
+
 	uint32_t id = scheduler_add_process((void *)lishell, sizeof(lishell));
 
 	if(id == 0)
-		print_string("Adding process failed!\n");
+	{
+		print_string("Adding process failed! System halting.\n");
+		disable_interrupts();
+		halt_cpu();
+	}
 	else
 	{
 		char buf[12] = {0};
@@ -90,7 +105,13 @@ void kmain(void *ptrMemoryMap, uint32_t memoryMapEntryCount)
 	// Interrupts are still disabled from the stage 2 bootloader
 	enable_interrupts();
 
-	while(1)
+	kernel_idle_loop();
+	
+}
+
+void kernel_idle_loop(void)
+{
+	for(;;)
 	{
 		halt_cpu();
 	}
@@ -100,7 +121,7 @@ void initialise_memory(void *ptrMemoryMap, uint32_t memoryMapEntryCount)
 {
 	uint32_t memSize = 0;
 
-	struct memoryMapEntry* ptrMemoryMapEntry = (struct memoryMapEntry *)ptrMemoryMap;
+	mmap_entry_t *entries = (mmap_entry_t *)ptrMemoryMap;
 
 	print_string("Parsing BIOS memory map... ");
 
@@ -108,8 +129,8 @@ void initialise_memory(void *ptrMemoryMap, uint32_t memoryMapEntryCount)
 	for(uint32_t i = 0; i < memoryMapEntryCount; i++)
 	{
 		// Any memory above 4GiB is being ignored since this is a 32-bit OS
-		if(ptrMemoryMapEntry[i].baseH == 0)
-			memSize += ptrMemoryMapEntry[i].lengthL;
+		if(entries[i].baseH == 0)
+			memSize += entries[i].lengthL;
 	}
 
 	print_string("done\n");
@@ -123,10 +144,10 @@ void initialise_memory(void *ptrMemoryMap, uint32_t memoryMapEntryCount)
 	for(uint32_t i = 0; i < memoryMapEntryCount; i++)
 	{
 		// Check if free for use or ACPI reclaimable
-		if(ptrMemoryMapEntry[i].type == 1 || ptrMemoryMapEntry[i].type == 3)
+		if(entries[i].type == 1 || entries[i].type == 3)
 		{
 			// Initialise region - makes it free for use
-			pmmngr_init_region(ptrMemoryMapEntry[i].baseL, ptrMemoryMapEntry[i].lengthL);
+			pmmngr_init_region(entries[i].baseL, entries[i].lengthL);
 		}
 	}
 
@@ -148,7 +169,7 @@ void initialise_memory(void *ptrMemoryMap, uint32_t memoryMapEntryCount)
 	
 	// De-initialise regions that we have used
 	pmmngr_deinit_region(0x00, 0x1000); // GDT
-	pmmngr_deinit_region(0x7F000, 0x1000); // Kernel stack
+	pmmngr_deinit_region(0x7E000, 0x2000); // Kernel stack (8192 KiB)
 	pmmngr_deinit_region(ebdaBase, ebdaLength); // EBDA
 	pmmngr_deinit_region(0xA0000, 0x60000); // Video memory/ROM area
 	pmmngr_deinit_region(MEMBITMAP_PHYSICAL_ADDRESS, 0x40000); // Physical memory manager bitmap
@@ -180,7 +201,7 @@ void initialise_memory(void *ptrMemoryMap, uint32_t memoryMapEntryCount)
 	set_vid_mem((void *)VIDMEM_VIRTUAL_ADDRESS);
 	
 	// Map the memory management bitmap. The bitmap is 256KiB in size, so that's (256 / 4 = 64) pages.
-	for(uint32_t i = 0; i < 64; i++)
+	for(uint32_t i = 0; i < 64; ++i)
 	{
 		vmmngr_map_page((physical_addr)(MEMBITMAP_PHYSICAL_ADDRESS + i * 4096),
 			(virtual_addr)(MEMBITMAP_VIRTUAL_ADDRESS + i * 4096));

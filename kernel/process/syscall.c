@@ -46,7 +46,7 @@ void call_handler(isr_t *stk)
 			break;
 
 		case SYSCALL_EXIT:
-			scheduler_remove_current_process();
+			scheduler_remove_current_process(stk);
 
 			break;
 	}
